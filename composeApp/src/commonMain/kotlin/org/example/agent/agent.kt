@@ -28,6 +28,7 @@ fun createTripAgent(): AIAgent<String, String> {
         あまり細かく聞きすぎず、ある程度分かったところで計画を立ててください
         """.trimIndent(),
         toolRegistry = toolRegistry,
+        strategy = createTripPlanningStrategy()
     ) {
         install(OpenTelemetry) {
             setVerbose(true)
