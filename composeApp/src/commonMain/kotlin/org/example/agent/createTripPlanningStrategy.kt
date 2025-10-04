@@ -1,6 +1,8 @@
 package org.example.agent
 
+import ai.koog.agents.core.dsl.builder.forwardTo
 import ai.koog.agents.core.dsl.builder.strategy
+import ai.koog.agents.core.dsl.extension.nodeLLMRequestStructured
 import ai.koog.agents.ext.agent.subgraphWithTask
 import ai.koog.agents.ext.tool.AskUser
 import ai.koog.prompt.executor.clients.openai.OpenAIModels
@@ -43,5 +45,12 @@ fun createTripPlanningStrategy() = strategy<String, String>("trip-planning") {
         planTripPrompt(requestInfo)
     }
 
-    nodeStart then nodeBeforeClarifyUserRequest then nodeClarifyUserRequest then nodeBeforePlanTrip then nodePlanTrip then nodeFinish
+    val nodeStructuredOutput by nodeLLMRequestStructured<TripPlan>()
+
+    nodeStart then nodeBeforeClarifyUserRequest then nodeClarifyUserRequest then nodeBeforePlanTrip then nodePlanTrip then nodeStructuredOutput
+    edge(
+        nodeStructuredOutput forwardTo nodeFinish
+                transformed { it.getOrThrow().structure.toString() }
+    )
+
 }
