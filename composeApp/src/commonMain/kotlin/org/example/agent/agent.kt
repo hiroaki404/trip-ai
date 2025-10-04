@@ -2,18 +2,17 @@ package org.example.agent
 
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.tools.ToolRegistry
-import ai.koog.agents.ext.tool.AskUser
 import ai.koog.agents.features.opentelemetry.feature.OpenTelemetry
 import ai.koog.agents.features.opentelemetry.integration.langfuse.addLangfuseExporter
 import ai.koog.prompt.executor.clients.openai.OpenAIModels
 import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
 
-fun createTripAgent(): AIAgent<String, String> {
+fun createTripAgent(askUser: AskUserInUI): AIAgent<String, String> {
     val apiKey = System.getenv("OPENAI_API_KEY")
     val executor = simpleOpenAIExecutor(apiKey)
 
     val toolRegistry = ToolRegistry {
-        tool(AskUser)
+        tool(askUser)
     }
 
     return AIAgent(
