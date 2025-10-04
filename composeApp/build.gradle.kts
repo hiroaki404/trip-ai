@@ -33,6 +33,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.koog.agents)
+            implementation(libs.koog.agents.features.opentelemetry)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
