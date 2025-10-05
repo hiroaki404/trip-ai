@@ -11,7 +11,7 @@ import org.example.prompt.planTripPrompt
 import org.example.prompt.systemClarifyRequestPrompt
 import org.example.prompt.systemPlanTripPrompt
 
-fun createTripPlanningStrategy() = strategy<String, String>("trip-planning") {
+fun createTripPlanningStrategy() = strategy<String, TripPlan>("trip-planning") {
 
     val nodeBeforeClarifyUserRequest by node<String, String> { userInput ->
         llm.writeSession {
@@ -50,7 +50,6 @@ fun createTripPlanningStrategy() = strategy<String, String>("trip-planning") {
     nodeStart then nodeBeforeClarifyUserRequest then nodeClarifyUserRequest then nodeBeforePlanTrip then nodePlanTrip then nodeStructuredOutput
     edge(
         nodeStructuredOutput forwardTo nodeFinish
-                transformed { it.getOrThrow().structure.toString() }
+                transformed { it.getOrThrow().structure }
     )
-
 }

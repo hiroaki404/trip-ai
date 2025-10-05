@@ -2,12 +2,15 @@ package org.example.agent
 
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.tools.ToolRegistry
+import ai.koog.agents.features.eventHandler.feature.handleEvents
 import ai.koog.agents.features.opentelemetry.feature.OpenTelemetry
 import ai.koog.agents.features.opentelemetry.integration.langfuse.addLangfuseExporter
 import ai.koog.prompt.executor.clients.openai.OpenAIModels
 import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
+import ai.koog.prompt.message.Message
+import org.example.trip_ai.ChatMessage
 
-fun createTripAgent(askUser: AskUserInUI): AIAgent<String, String> {
+fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage) -> Unit): AIAgent<String, TripPlan> {
     val apiKey = System.getenv("OPENAI_API_KEY")
     val executor = simpleOpenAIExecutor(apiKey)
 
@@ -15,7 +18,7 @@ fun createTripAgent(askUser: AskUserInUI): AIAgent<String, String> {
         tool(askUser)
     }
 
-    return AIAgent(
+    return AIAgent<String, TripPlan>(
         promptExecutor = executor,
         llmModel = OpenAIModels.Reasoning.O4Mini,
         systemPrompt = """
@@ -32,6 +35,30 @@ fun createTripAgent(askUser: AskUserInUI): AIAgent<String, String> {
         install(OpenTelemetry) {
             setVerbose(true)
             addLangfuseExporter()
+        }
+        handleEvents {
+            onToolCallStarting {
+                when (val tool = it.tool) {
+                    is AskUserInUI -> {
+                        onMessageUpdate(
+                            ChatMessage.ToolCall(
+                                tool.name,
+                                (it.toolArgs as AskUserInUI.Args).message
+                            )
+                        )
+                    }
+
+                    else -> { /* no-op */
+                    }
+                }
+            }
+            onLLMCallCompleted {
+                when (val lastMessage = it.prompt.messages.last()) {
+                    is Message.Assistant -> onMessageUpdate(ChatMessage.Assistant(lastMessage.content))
+                    else -> { /* no-op */
+                    }
+                }
+            }
         }
     }
 }

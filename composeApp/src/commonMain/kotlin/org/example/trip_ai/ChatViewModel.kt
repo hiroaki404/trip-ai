@@ -8,11 +8,19 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.agent.AskUserInUI
+import org.example.agent.TripPlan
 import org.example.agent.createTripAgent
+
+sealed interface ChatMessage {
+    data class User(val content: String) : ChatMessage
+    data class Assistant(val content: String) : ChatMessage
+    data class ToolCall(val toolName: String, val content: String) : ChatMessage
+    data class Structured(val content: TripPlan) : ChatMessage
+}
 
 data class ChatUiState(
     val userInput: String = "",
-    val agentResponse: String = "",
+    val chatMessage: List<ChatMessage> = emptyList(),
     val isLoading: Boolean = false
 )
 
@@ -30,15 +38,45 @@ class ChatViewModel : ViewModel() {
             if (_uiState.value.isLoading) {
                 askUser.setUserInput(_uiState.value.userInput)
             } else {
-                _uiState.update { it.copy(isLoading = true, agentResponse = "") }
+                _uiState.update {
+                    it.copy(
+                        isLoading = true,
+                        chatMessage = it.chatMessage + ChatMessage.User(it.userInput),
+                    )
+                }
                 try {
-                    val agent = createTripAgent(askUser)
+                    val agent = createTripAgent(askUser) { message ->
+                        when (message) {
+                            is ChatMessage.ToolCall -> {
+                                _uiState.update {
+                                    it.copy(
+                                        userInput = "",
+                                        chatMessage = it.chatMessage + message,
+//                                        isLoading = false
+                                    )
+                                }
+                            }
+
+                            is ChatMessage.Assistant -> {
+                                _uiState.update {
+                                    it.copy(chatMessage = it.chatMessage + message)
+                                }
+                            }
+
+                            else -> {}
+                        }
+                    }
                     val response = agent.run(_uiState.value.userInput)
-                    _uiState.update { it.copy(agentResponse = response, isLoading = false) }
+                    _uiState.update {
+                        it.copy(
+                            chatMessage = it.chatMessage + ChatMessage.Structured(response),
+                            isLoading = false
+                        )
+                    }
                 } catch (e: Exception) {
                     _uiState.update {
                         it.copy(
-                            agentResponse = "エラーが発生しました: ${e.message}",
+                            chatMessage = it.chatMessage + ChatMessage.Assistant("Error: ${e.message}"),
                             isLoading = false
                         )
                     }
