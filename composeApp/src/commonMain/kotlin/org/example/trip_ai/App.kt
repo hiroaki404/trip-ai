@@ -99,6 +99,7 @@ fun ChatMessageItem(message: ChatMessage) {
                 }
             }
         }
+
         is ChatMessage.Assistant -> {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -121,6 +122,7 @@ fun ChatMessageItem(message: ChatMessage) {
                 }
             }
         }
+
         is ChatMessage.ToolCall -> {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -143,6 +145,7 @@ fun ChatMessageItem(message: ChatMessage) {
                 }
             }
         }
+
         is ChatMessage.Structured -> {
             TripPlanCard(tripPlan = message.content)
         }
@@ -197,8 +200,11 @@ fun StepCard(step: TripPlan.Step) {
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            step.activities.forEach { activity ->
-                ActivityItem(activity = activity)
+            step.scheduleEntries.forEach { entry ->
+                when (entry) {
+                    is TripPlan.Step.Activity -> ActivityItem(activity = entry)
+                    is TripPlan.Step.Transportation -> TransportationItem(transportation = entry)
+                }
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
@@ -225,5 +231,34 @@ fun ActivityItem(activity: TripPlan.Step.Activity) {
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(start = 8.dp, top = 4.dp)
         )
+    }
+}
+
+@Composable
+fun TransportationItem(transportation: TripPlan.Step.Transportation) {
+    Column {
+        Row {
+            Text(
+                text = "${transportation.duration} - ",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.tertiary
+            )
+            Text(
+                text = "${transportation.from} → ${transportation.to}",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.tertiary
+            )
+        }
+        Row(modifier = Modifier.padding(start = 8.dp, top = 4.dp)) {
+            Text(
+                text = "[${transportation.type}] ",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.tertiary
+            )
+            Text(
+                text = transportation.description,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
     }
 }

@@ -3,31 +3,51 @@ package org.example.agent
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import kotlinx.serialization.Serializable
 
+interface ScheduleEntry {
+    val duration: String
+    val description: String
+}
+
 @Serializable
 @LLMDescription("A complete trip plan containing a summary and daily steps")
 data class TripPlan(
     @property:LLMDescription("Overall summary of the trip plan")
     val summary: String,
-    @property:LLMDescription("List of daily steps with scheduled activities")
+    @property:LLMDescription("List of daily steps with scheduled entries")
     val step: List<Step>
 ) {
     @Serializable
-    @LLMDescription("A single day step in the trip plan with scheduled activities")
+    @LLMDescription("A single day step in the trip plan with scheduled entries")
     data class Step(
         @property:LLMDescription("Date and time for this step")
         val date: String,
-        @property:LLMDescription("List of activities scheduled for this day")
-        val activities: List<Activity>
+        @property:LLMDescription("List of schedule entries (activities and transportation) for this day")
+        val scheduleEntries: List<ScheduleEntry>,
     ) {
         @Serializable
         @LLMDescription("A specific activity within a step")
         data class Activity(
             @property:LLMDescription("Duration or time range for this activity")
-            val duration: String,
+            override val duration: String,
             @property:LLMDescription("Detailed description of the activity")
-            val description: String,
+            override val description: String,
             @property:LLMDescription("Location where the activity takes place")
             val location: String
-        )
+        ) : ScheduleEntry
+
+        @Serializable
+        @LLMDescription("Transportation between locations")
+        data class Transportation(
+            @property:LLMDescription("Type of transportation (e.g., train, bus, taxi, walking)")
+            val type: String,
+            @property:LLMDescription("Departure location")
+            val from: String,
+            @property:LLMDescription("Destination location")
+            val to: String,
+            @property:LLMDescription("Duration or time range for this transportation")
+            override val duration: String,
+            @property:LLMDescription("Detailed description of the transportation")
+            override val description: String
+        ) : ScheduleEntry
     }
 }
