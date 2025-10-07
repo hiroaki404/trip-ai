@@ -14,60 +14,72 @@ import org.example.agent.TripPlan
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
-@Preview
 fun App() {
     val viewModel: ChatViewModel = viewModel { ChatViewModel() }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     MaterialTheme {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = "旅行計画エージェント",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+        AppContent(
+            uiState = uiState,
+            onUserInputChange = viewModel::updateUserInput,
+            onSendMessage = viewModel::sendMessage
+        )
+    }
+}
 
-            TextField(
-                value = uiState.userInput,
-                onValueChange = { viewModel.updateUserInput(it) },
-                label = { Text("旅行の内容を入力してください") },
+@Composable
+fun AppContent(
+    uiState: ChatUiState,
+    onUserInputChange: (String) -> Unit,
+    onSendMessage: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "旅行計画エージェント",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        TextField(
+            value = uiState.userInput,
+            onValueChange = onUserInputChange,
+            label = { Text("旅行の内容を入力してください") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp),
+            maxLines = 5,
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = onSendMessage,
+            enabled = uiState.userInput.isNotBlank(),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(if (uiState.isLoading) "実行中..." else "送信")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (uiState.isLoading) {
+            CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+        }
+
+        if (uiState.chatMessage.isNotEmpty()) {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp),
-                maxLines = 5,
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = viewModel::sendMessage,
-                enabled = uiState.userInput.isNotBlank(),
-                modifier = Modifier.fillMaxWidth()
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
             ) {
-                Text(if (uiState.isLoading) "実行中..." else "送信")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (uiState.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.padding(16.dp))
-            }
-
-            if (uiState.chatMessage.isNotEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    uiState.chatMessage.forEach { message ->
-                        ChatMessageItem(message)
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
+                uiState.chatMessage.forEach { message ->
+                    ChatMessageItem(message)
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
@@ -213,52 +225,126 @@ fun StepCard(step: TripPlan.Step) {
 
 @Composable
 fun ActivityItem(activity: TripPlan.Step.ScheduleEntry.Activity) {
-    Column {
-        Row {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row {
+                Text(
+                    text = "📍 ",
+                    style = MaterialTheme.typography.labelMedium
+                )
+                Text(
+                    text = "${activity.duration} - ",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    text = activity.location,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
             Text(
-                text = "${activity.duration} - ",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.secondary
-            )
-            Text(
-                text = activity.location,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.secondary
+                text = activity.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.padding(start = 8.dp, top = 4.dp)
             )
         }
-        Text(
-            text = activity.description,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(start = 8.dp, top = 4.dp)
-        )
     }
 }
 
 @Composable
 fun TransportationItem(transportation: TripPlan.Step.ScheduleEntry.Transportation) {
-    Column {
-        Row {
-            Text(
-                text = "${transportation.duration} - ",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.tertiary
-            )
-            Text(
-                text = "${transportation.from} → ${transportation.to}",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.tertiary
-            )
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+        )
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row {
+                Text(
+                    text = "🚃 ",
+                    style = MaterialTheme.typography.labelMedium
+                )
+                Text(
+                    text = "${transportation.duration} - ",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+                Text(
+                    text = "${transportation.from} → ${transportation.to}",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+            }
+            Row(modifier = Modifier.padding(start = 8.dp, top = 4.dp)) {
+                Text(
+                    text = "[${transportation.type}] ",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+                Text(
+                    text = transportation.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+            }
         }
-        Row(modifier = Modifier.padding(start = 8.dp, top = 4.dp)) {
-            Text(
-                text = "[${transportation.type}] ",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.tertiary
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AppContentPreview() {
+    val samplePlan = TripPlan(
+        summary = "京都2泊3日の旅",
+        step = listOf(
+            TripPlan.Step(
+                date = "1日目：2024年12月1日",
+                scheduleEntries = listOf(
+                    TripPlan.Step.ScheduleEntry.Transportation(
+                        duration = "9:00-11:30",
+                        from = "東京駅",
+                        to = "京都駅",
+                        type = "新幹線",
+                        description = "のぞみ123号で移動"
+                    ),
+                    TripPlan.Step.ScheduleEntry.Activity(
+                        duration = "12:00-13:00",
+                        location = "京都駅周辺",
+                        description = "昼食：京都ラーメン"
+                    ),
+                    TripPlan.Step.ScheduleEntry.Activity(
+                        duration = "14:00-17:00",
+                        location = "清水寺",
+                        description = "清水寺を参拝、周辺の散策"
+                    )
+                )
             )
-            Text(
-                text = transportation.description,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
+        )
+    )
+
+    val previewState = ChatUiState(
+        userInput = "",
+        isLoading = false,
+        chatMessage = listOf(
+            ChatMessage.User("京都に2泊3日で旅行に行きたいです"),
+            ChatMessage.Assistant("承知しました。京都2泊3日の旅行プランを作成します。"),
+            ChatMessage.Structured(samplePlan)
+        )
+    )
+
+    MaterialTheme {
+        AppContent(
+            uiState = previewState,
+            onUserInputChange = {},
+            onSendMessage = {}
+        )
     }
 }
