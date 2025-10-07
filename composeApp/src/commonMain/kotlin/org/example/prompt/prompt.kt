@@ -1,5 +1,8 @@
 package org.example.prompt
 
+import org.example.agent.TripPlan
+import org.example.agent.TripPlan.Step
+
 val systemClarifyRequestPrompt = """
 あなたは親しみやすく経験豊富な旅行プランナーです。
 ユーザーの旅行の希望を自然な会話形式で丁寧に聞き出すことが役割です。
@@ -56,7 +59,7 @@ fun clarifyRequestPrompt(userInput: String) = """
 
 val systemPlanTripPrompt = """
 あなたは経験豊富な旅行プランナーです。
-ユーザーから収集した情報を基に、実現可能で魅力的な旅行計画を作成することが役割です。
+ユーザーから収集した情報を基に、実現可能で魅力的な旅行計画をMarkdown形式で作成することが役割です。
 
 【計画作成の原則】
 - 収集済み情報を最大限活用する
@@ -66,7 +69,7 @@ val systemPlanTripPrompt = """
 - ユーザーの目的・テーマに沿った内容にする
 
 【作成する計画の構造】
-以下のデータ構造に従って旅行計画を作成してください：
+以下のMarkdown形式で旅行計画を作成してください：
 
 1. **summary（旅行の概要サマリー）**
    - 旅行の全体像を2-3文で記述
@@ -75,15 +78,15 @@ val systemPlanTripPrompt = """
 
 2. **step（日ごとのステップ）**
    各日程について以下を含むステップを作成：
-   - date: その日の日付（年月日と開始時刻）
-   - scheduleEntries: その日のスケジュールエントリリスト（ActivityとTransportationを時系列順に混在させる）
+   - 各Stepの日付と開始時刻を見出しにする
+   - ActivityとTransportationを見出しとして時系列順に記述
 
-     Activityエントリには以下を含める：
+     Activityには以下を含める：
      * duration: 時間帯または所要時間（例: "09:00-12:00"、"午前"、"3時間"）
      * description: 活動の詳細な説明（観光スポット、食事、宿泊など具体的な内容）
      * location: 活動を行う場所（具体的な施設名や地域名）
 
-     Transportationエントリには以下を含める：
+     Transportationには以下を含める：
      * type: 交通手段の種類（例: "電車"、"バス"、"タクシー"、"徒歩"）
      * from: 出発地（具体的な場所名）
      * to: 目的地（具体的な場所名）
@@ -91,11 +94,11 @@ val systemPlanTripPrompt = """
      * description: 移動の詳細説明（路線名、料金、注意事項など）
 
 【スケジュール記述のポイント】
-- scheduleEntriesリストにActivityとTransportationを時系列順に混在させる
+- ActivityとTransportationを時系列順に混在させる
 - 朝食(Activity) → 移動(Transportation) → 観光(Activity) → 移動(Transportation) → 昼食(Activity)... のように記録
 - 具体的な施設名や観光地名を挙げる
-- 移動が発生する場合は、必ずTransportationエントリとして記録する
-- 金額の目安や注意事項も活動や移動の説明に含める可能性がある
+- 移動が発生する場合は、必ずTransportationとして記録する
+- 金額の目安や注意事項も活動や移動の説明に含める
 
 【注意事項】
 - 未確認情報については「〇〇の場合」と条件を明記
@@ -105,36 +108,195 @@ val systemPlanTripPrompt = """
 """
 
 fun planTripPrompt(requestInfo: String) = """
-以下のユーザー情報を基に、構造化された旅行計画を作成してください。
+以下のユーザー情報を基に、Markdown形式で旅行計画を作成してください。
 
 $requestInfo
 
-【出力要件】
-1. summary: 旅行全体のサマリーを2-3文で作成
-   - 目的地、期間、テーマを含める
-   - 予算、宿泊、移動の概要も含める
+【出力形式】
+必ず以下のMarkdown形式に従ってください：
 
-2. step: 日ごとの詳細スケジュールを作成
-   - 各日のdateを設定（旅行開始日から日数分）
-   - 各日のscheduleEntriesリストを作成（ActivityとTransportationを時系列順に混在させる）
+## summary
+旅行全体のサマリーを2-3文で記述（目的地、期間、テーマ、予算、宿泊、移動の概要を含める）
 
-     Activityエントリ：
-     * duration: 時間帯（"09:00-12:00"形式）または時間幅（"午前"、"3時間"など）
-     * description: 活動の詳細（場所の説明、食事内容など）
-     * location: 具体的な場所名（施設名、地域名、レストラン名など）
+## Step 1: YYYY-MM-DD HH:MM
 
-     Transportationエントリ：
-     * type: 交通手段の種類（"電車"、"バス"、"タクシー"、"徒歩"など）
-     * from: 出発地の具体的な場所名
-     * to: 目的地の具体的な場所名
-     * duration: 所要時間（"30分"、"09:00-09:30"など）
-     * description: 移動の詳細（路線名、料金、乗り場、注意事項など）
+### Activity
+- duration: 時間帯（"09:00-12:00"形式）または時間幅（"午前"、"3時間"など）
+- description: 活動の詳細（場所の説明、食事内容など）
+- location: 具体的な場所名（施設名、地域名、レストラン名など）
+
+### Transportation
+- type: 交通手段の種類（"電車"、"バス"、"タクシー"、"徒歩"など）
+- from: 出発地の具体的な場所名
+- to: 目的地の具体的な場所名
+- duration: 所要時間（"30分"、"09:00-09:30"など）
+- description: 移動の詳細（路線名、料金、乗り場、注意事項など）
+
+### Activity
+...
+
+（ActivityとTransportationを時系列順に繰り返す）
+
+## Step 2: YYYY-MM-DD HH:MM
+
+### Activity
+...
 
 【注意事項】
 - 未確認の情報については、一般的なケースを想定して一つのプランを提案
-- scheduleEntriesリストに朝食(Activity) → 移動(Transportation) → 観光(Activity)... のように時系列順に記録
-- 移動が発生する場合は、必ずTransportationエントリとして記録する
+- ActivityとTransportationを時系列順に記録（朝食 → 移動 → 観光 → 移動...）
+- 移動が発生する場合は、必ずTransportationとして記録する
 - 具体的な施設名や観光地名を必ず含める
 - 実現可能で具体的な時間配分にする
 """
+
+val tripPlanExample = TripPlan(
+    summary = "東京2泊3日の旅行プラン。浅草、渋谷、新宿などの人気観光地を巡り、日本の伝統と現代文化を体験。予算は1人あたり約8万円（宿泊費・交通費・食事込み）。宿泊は新宿のビジネスホテルで、移動は主に電車を利用します。",
+    step = listOf(
+        Step(
+            date = "2025-11-01 09:00",
+            scheduleEntries = listOf(
+                Step.ScheduleEntry.Activity(
+                    duration = "09:00-10:00",
+                    description = "羽田空港到着後、手荷物受取とチェックイン",
+                    location = "羽田空港"
+                ),
+                Step.ScheduleEntry.Transportation(
+                    type = "電車",
+                    from = "羽田空港",
+                    to = "浅草駅",
+                    duration = "40分",
+                    description = "京急線・浅草線直通で浅草へ。運賃約600円。"
+                ),
+                Step.ScheduleEntry.Activity(
+                    duration = "11:00-13:00",
+                    description = "浅草寺を参拝し、仲見世通りで食べ歩き。雷門で記念撮影。",
+                    location = "浅草寺・仲見世通り"
+                ),
+                Step.ScheduleEntry.Activity(
+                    duration = "13:00-14:00",
+                    description = "浅草で昼食。天ぷらやお蕎麦など江戸前料理を楽しむ。予算1,500円程度。",
+                    location = "浅草のレストラン"
+                ),
+                Step.ScheduleEntry.Transportation(
+                    type = "電車",
+                    from = "浅草駅",
+                    to = "新宿駅",
+                    duration = "30分",
+                    description = "銀座線で渋谷経由、JR山手線で新宿へ。運賃約200円。"
+                ),
+                Step.ScheduleEntry.Activity(
+                    duration = "15:00-16:00",
+                    description = "ホテルにチェックイン。荷物を置いて休憩。",
+                    location = "新宿のビジネスホテル"
+                ),
+                Step.ScheduleEntry.Activity(
+                    duration = "16:00-18:00",
+                    description = "新宿の街を散策。歌舞伎町や伊勢丹などを見て回る。",
+                    location = "新宿東口・歌舞伎町"
+                ),
+                Step.ScheduleEntry.Activity(
+                    duration = "18:30-20:00",
+                    description = "新宿で夕食。居酒屋や焼き肉など。予算3,000円程度。",
+                    location = "新宿の居酒屋"
+                )
+            )
+        ),
+        Step(
+            date = "2025-11-02 08:00",
+            scheduleEntries = listOf(
+                Step.ScheduleEntry.Activity(
+                    duration = "08:00-09:00",
+                    description = "ホテルで朝食。ビュッフェまたは軽食。",
+                    location = "ホテル"
+                ),
+                Step.ScheduleEntry.Transportation(
+                    type = "電車",
+                    from = "新宿駅",
+                    to = "渋谷駅",
+                    duration = "10分",
+                    description = "JR山手線で渋谷へ。運賃約160円。"
+                ),
+                Step.ScheduleEntry.Activity(
+                    duration = "10:00-12:00",
+                    description = "渋谷のスクランブル交差点やハチ公像を見学。109やパルコでショッピング。",
+                    location = "渋谷"
+                ),
+                Step.ScheduleEntry.Activity(
+                    duration = "12:00-13:00",
+                    description = "渋谷で昼食。ラーメンやカフェなど。予算1,000円程度。",
+                    location = "渋谷のレストラン"
+                ),
+                Step.ScheduleEntry.Transportation(
+                    type = "電車",
+                    from = "渋谷駅",
+                    to = "原宿駅",
+                    duration = "5分",
+                    description = "JR山手線で原宿へ。運賃約140円。"
+                ),
+                Step.ScheduleEntry.Activity(
+                    duration = "14:00-16:00",
+                    description = "明治神宮を参拝。静かな森の中を散策してリフレッシュ。",
+                    location = "明治神宮"
+                ),
+                Step.ScheduleEntry.Activity(
+                    duration = "16:00-18:00",
+                    description = "竹下通りを散策。クレープやスイーツを楽しむ。",
+                    location = "竹下通り"
+                ),
+                Step.ScheduleEntry.Transportation(
+                    type = "電車",
+                    from = "原宿駅",
+                    to = "新宿駅",
+                    duration = "10分",
+                    description = "JR山手線で新宿へ戻る。運賃約160円。"
+                ),
+                Step.ScheduleEntry.Activity(
+                    duration = "19:00-21:00",
+                    description = "新宿西口の思い出横丁で夕食。昭和レトロな雰囲気を楽しむ。予算2,500円程度。",
+                    location = "思い出横丁"
+                )
+            )
+        ),
+        Step(
+            date = "2025-11-03 08:00",
+            scheduleEntries = listOf(
+                Step.ScheduleEntry.Activity(
+                    duration = "08:00-09:00",
+                    description = "ホテルで朝食とチェックアウト準備。",
+                    location = "ホテル"
+                ),
+                Step.ScheduleEntry.Transportation(
+                    type = "電車",
+                    from = "新宿駅",
+                    to = "東京駅",
+                    duration = "15分",
+                    description = "JR中央線で東京駅へ。運賃約200円。"
+                ),
+                Step.ScheduleEntry.Activity(
+                    duration = "10:00-11:30",
+                    description = "東京駅周辺を散策。丸の内のビル街や皇居外苑を見学。",
+                    location = "東京駅・丸の内"
+                ),
+                Step.ScheduleEntry.Activity(
+                    duration = "11:30-12:30",
+                    description = "東京駅の駅弁やレストランで昼食。お土産も購入。予算2,000円程度。",
+                    location = "東京駅"
+                ),
+                Step.ScheduleEntry.Transportation(
+                    type = "電車",
+                    from = "東京駅",
+                    to = "羽田空港",
+                    duration = "30分",
+                    description = "京浜東北線・モノレールで羽田空港へ。運賃約500円。"
+                ),
+                Step.ScheduleEntry.Activity(
+                    duration = "14:00-15:00",
+                    description = "羽田空港でチェックイン。出発まで空港内で過ごす。",
+                    location = "羽田空港"
+                )
+            )
+        )
+    )
+)
 

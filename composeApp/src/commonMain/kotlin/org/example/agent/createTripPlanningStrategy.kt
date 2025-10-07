@@ -6,10 +6,8 @@ import ai.koog.agents.core.dsl.extension.nodeLLMRequestStructured
 import ai.koog.agents.ext.agent.subgraphWithTask
 import ai.koog.agents.ext.tool.AskUser
 import ai.koog.prompt.executor.clients.openai.OpenAIModels
-import org.example.prompt.clarifyRequestPrompt
-import org.example.prompt.planTripPrompt
-import org.example.prompt.systemClarifyRequestPrompt
-import org.example.prompt.systemPlanTripPrompt
+import ai.koog.prompt.structure.StructureFixingParser
+import org.example.prompt.*
 
 fun createTripPlanningStrategy() = strategy<String, TripPlan>("trip-planning") {
 
@@ -45,7 +43,14 @@ fun createTripPlanningStrategy() = strategy<String, TripPlan>("trip-planning") {
         planTripPrompt(requestInfo)
     }
 
-    val nodeStructuredOutput by nodeLLMRequestStructured<TripPlan>()
+    val nodeStructuredOutput by nodeLLMRequestStructured<TripPlan>(
+        "tripPlanStructured",
+        examples = listOf(tripPlanExample),
+        fixingParser = StructureFixingParser(
+            fixingModel = OpenAIModels.Chat.GPT4o,
+            retries = 2
+        )
+    )
 
     nodeStart then nodeBeforeClarifyUserRequest then nodeClarifyUserRequest then nodeBeforePlanTrip then nodePlanTrip then nodeStructuredOutput
     edge(

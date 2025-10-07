@@ -202,8 +202,8 @@ fun StepCard(step: TripPlan.Step) {
 
             step.scheduleEntries.forEach { entry ->
                 when (entry) {
-                    is TripPlan.Step.Activity -> ActivityItem(activity = entry)
-                    is TripPlan.Step.Transportation -> TransportationItem(transportation = entry)
+                    is TripPlan.Step.ScheduleEntry.Activity -> ActivityItem(activity = entry)
+                    is TripPlan.Step.ScheduleEntry.Transportation -> TransportationItem(transportation = entry)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -212,7 +212,7 @@ fun StepCard(step: TripPlan.Step) {
 }
 
 @Composable
-fun ActivityItem(activity: TripPlan.Step.Activity) {
+fun ActivityItem(activity: TripPlan.Step.ScheduleEntry.Activity) {
     Column {
         Row {
             Text(
@@ -235,7 +235,7 @@ fun ActivityItem(activity: TripPlan.Step.Activity) {
 }
 
 @Composable
-fun TransportationItem(transportation: TripPlan.Step.Transportation) {
+fun TransportationItem(transportation: TripPlan.Step.ScheduleEntry.Transportation) {
     Column {
         Row {
             Text(

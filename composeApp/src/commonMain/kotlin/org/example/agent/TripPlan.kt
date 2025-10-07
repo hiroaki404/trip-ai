@@ -3,11 +3,6 @@ package org.example.agent
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import kotlinx.serialization.Serializable
 
-interface ScheduleEntry {
-    val duration: String
-    val description: String
-}
-
 @Serializable
 @LLMDescription("A complete trip plan containing a summary and daily steps")
 data class TripPlan(
@@ -25,29 +20,35 @@ data class TripPlan(
         val scheduleEntries: List<ScheduleEntry>,
     ) {
         @Serializable
-        @LLMDescription("A specific activity within a step")
-        data class Activity(
-            @property:LLMDescription("Duration or time range for this activity")
-            override val duration: String,
-            @property:LLMDescription("Detailed description of the activity")
-            override val description: String,
-            @property:LLMDescription("Location where the activity takes place")
-            val location: String
-        ) : ScheduleEntry
+        sealed interface ScheduleEntry {
+            val duration: String
+            val description: String
 
-        @Serializable
-        @LLMDescription("Transportation between locations")
-        data class Transportation(
-            @property:LLMDescription("Type of transportation (e.g., train, bus, taxi, walking)")
-            val type: String,
-            @property:LLMDescription("Departure location")
-            val from: String,
-            @property:LLMDescription("Destination location")
-            val to: String,
-            @property:LLMDescription("Duration or time range for this transportation")
-            override val duration: String,
-            @property:LLMDescription("Detailed description of the transportation")
-            override val description: String
-        ) : ScheduleEntry
+            @Serializable
+            @LLMDescription("A specific activity within a step")
+            data class Activity(
+                @property:LLMDescription("Duration or time range for this activity")
+                override val duration: String,
+                @property:LLMDescription("Detailed description of the activity")
+                override val description: String,
+                @property:LLMDescription("Location where the activity takes place")
+                val location: String
+            ) : ScheduleEntry
+
+            @Serializable
+            @LLMDescription("Transportation between locations")
+            data class Transportation(
+                @property:LLMDescription("Type of transportation (e.g., train, bus, taxi, walking)")
+                val type: String,
+                @property:LLMDescription("Departure location")
+                val from: String,
+                @property:LLMDescription("Destination location")
+                val to: String,
+                @property:LLMDescription("Duration or time range for this transportation")
+                override val duration: String,
+                @property:LLMDescription("Detailed description of the transportation")
+                override val description: String
+            ) : ScheduleEntry
+        }
     }
 }
