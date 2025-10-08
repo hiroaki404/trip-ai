@@ -38,6 +38,7 @@ data class WebPageScrapingResult(
     val body: String,
 )
 
+@LLMDescription("Tools for searching the web.")
 class WebSearchTools(
     private val googleApiKey: String,
     private val searchEngineId: String,
@@ -51,7 +52,6 @@ class WebSearchTools(
 
     @Tool
     @LLMDescription("Search for a query on Google.")
-    @Suppress("unused")
     suspend fun search(
         @LLMDescription("The query to search")
         query: String,

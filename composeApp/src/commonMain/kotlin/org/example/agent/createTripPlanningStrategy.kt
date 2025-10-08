@@ -3,11 +3,13 @@ package org.example.agent
 import ai.koog.agents.core.dsl.builder.forwardTo
 import ai.koog.agents.core.dsl.builder.strategy
 import ai.koog.agents.core.dsl.extension.nodeLLMRequestStructured
+import ai.koog.agents.core.tools.reflect.asTools
 import ai.koog.agents.ext.agent.subgraphWithTask
 import ai.koog.agents.ext.tool.AskUser
 import ai.koog.prompt.executor.clients.openai.OpenAIModels
 import ai.koog.prompt.structure.StructureFixingParser
 import org.example.prompt.*
+import org.example.tools.WebSearchTools
 
 fun createTripPlanningStrategy() = strategy<String, TripPlan>("trip-planning") {
 
@@ -36,8 +38,10 @@ fun createTripPlanningStrategy() = strategy<String, TripPlan>("trip-planning") {
         requestInfo
     }
 
+    val googleApiKey = System.getenv("CUSTOM_SEARCH_API_KEY")
+    val searchEngineId = System.getenv("SEARCH_ENGINE_ID")
     val nodePlanTrip by subgraphWithTask<String, String>(
-        tools = emptyList(),
+        tools = WebSearchTools(googleApiKey, searchEngineId).asTools(),
         llmModel = OpenAIModels.Reasoning.O4Mini
     ) { requestInfo ->
         planTripPrompt(requestInfo)

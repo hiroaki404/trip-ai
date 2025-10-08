@@ -2,20 +2,26 @@ package org.example.agent
 
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.tools.ToolRegistry
+import ai.koog.agents.core.tools.reflect.asTools
 import ai.koog.agents.features.eventHandler.feature.handleEvents
 import ai.koog.agents.features.opentelemetry.feature.OpenTelemetry
 import ai.koog.agents.features.opentelemetry.integration.langfuse.addLangfuseExporter
 import ai.koog.prompt.executor.clients.openai.OpenAIModels
 import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
 import ai.koog.prompt.message.Message
+import org.example.tools.WebSearchTools
 import org.example.trip_ai.ChatMessage
 
 fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage) -> Unit): AIAgent<String, TripPlan> {
     val apiKey = System.getenv("OPENAI_API_KEY")
+    val googleApiKey = System.getenv("CUSTOM_SEARCH_API_KEY")
+    val searchEngineId = System.getenv("SEARCH_ENGINE_ID")
+
     val executor = simpleOpenAIExecutor(apiKey)
 
     val toolRegistry = ToolRegistry {
         tool(askUser)
+        tools(WebSearchTools(googleApiKey, searchEngineId).asTools())
     }
 
     return AIAgent<String, TripPlan>(
