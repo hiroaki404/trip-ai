@@ -7,9 +7,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.example.agent.AskUserInUI
 import org.example.agent.TripPlan
 import org.example.agent.createTripAgent
+import org.example.tools.AskUserInUI
 
 sealed interface ChatMessage {
     data class User(val content: String) : ChatMessage

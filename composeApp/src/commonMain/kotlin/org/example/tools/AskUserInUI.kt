@@ -1,4 +1,4 @@
-package org.example.agent
+package org.example.tools
 
 import ai.koog.agents.core.tools.SimpleTool
 import ai.koog.agents.core.tools.annotations.LLMDescription

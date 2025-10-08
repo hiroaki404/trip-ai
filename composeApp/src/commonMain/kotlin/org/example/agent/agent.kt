@@ -9,6 +9,7 @@ import ai.koog.agents.features.opentelemetry.integration.langfuse.addLangfuseExp
 import ai.koog.prompt.executor.clients.openai.OpenAIModels
 import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
 import ai.koog.prompt.message.Message
+import org.example.tools.AskUserInUI
 import org.example.tools.WebSearchTools
 import org.example.trip_ai.ChatMessage
 
