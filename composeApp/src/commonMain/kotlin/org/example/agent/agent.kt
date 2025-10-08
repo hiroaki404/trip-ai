@@ -55,7 +55,13 @@ fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage) -> Unit
                         )
                     }
 
-                    else -> { /* no-op */
+                    else -> {
+                        onMessageUpdate(
+                            ChatMessage.ToolCall(
+                                tool.name,
+                                "Tool is Called"
+                            )
+                        )
                     }
                 }
             }
