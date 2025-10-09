@@ -318,12 +318,16 @@ fun AppContentPreview() {
                     TripPlan.Step.ScheduleEntry.Activity(
                         duration = "12:00-13:00",
                         location = "京都駅周辺",
-                        description = "昼食：京都ラーメン"
+                        description = "昼食：京都ラーメン",
+                        longitude = 135.7583,
+                        latitude = 34.9855
                     ),
                     TripPlan.Step.ScheduleEntry.Activity(
                         duration = "14:00-17:00",
                         location = "清水寺",
-                        description = "清水寺を参拝、周辺の散策"
+                        description = "清水寺を参拝、周辺の散策",
+                        longitude = 135.7851,
+                        latitude = 34.9948
                     )
                 )
             )

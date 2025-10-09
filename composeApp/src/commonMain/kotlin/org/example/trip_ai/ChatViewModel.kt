@@ -37,6 +37,7 @@ class ChatViewModel : ViewModel() {
         viewModelScope.launch {
             if (_uiState.value.isLoading) {
                 askUser.setUserInput(_uiState.value.userInput)
+                _uiState.update { it.copy(chatMessage = it.chatMessage + ChatMessage.User(it.userInput)) }
             } else {
                 _uiState.update {
                     it.copy(

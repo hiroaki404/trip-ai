@@ -32,7 +32,11 @@ data class TripPlan(
                 @property:LLMDescription("Detailed description of the activity")
                 override val description: String,
                 @property:LLMDescription("Location where the activity takes place")
-                val location: String
+                val location: String,
+                @property:LLMDescription("Longitude of the location")
+                val longitude: Double,
+                @property:LLMDescription("Latitude of the location")
+                val latitude: Double,
             ) : ScheduleEntry
 
             @Serializable
