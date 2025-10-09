@@ -21,7 +21,8 @@ sealed interface ChatMessage {
 data class ChatUiState(
     val userInput: String = "",
     val chatMessage: List<ChatMessage> = emptyList(),
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val isAgentActive: Boolean = false,
 )
 
 class ChatViewModel : ViewModel() {
@@ -35,12 +36,21 @@ class ChatViewModel : ViewModel() {
 
     fun sendMessage() {
         viewModelScope.launch {
-            if (_uiState.value.isLoading) {
+            if (_uiState.value.isAgentActive) {
                 askUser.setUserInput(_uiState.value.userInput)
-                _uiState.update { it.copy(chatMessage = it.chatMessage + ChatMessage.User(it.userInput)) }
-            } else {
                 _uiState.update {
                     it.copy(
+                        userInput = "",
+                        chatMessage = it.chatMessage + ChatMessage.User(it.userInput),
+                        isLoading = true,
+                    )
+                }
+            } else {
+                val userInput = _uiState.value.userInput
+                _uiState.update {
+                    it.copy(
+                        userInput = "",
+                        isAgentActive = true,
                         isLoading = true,
                         chatMessage = it.chatMessage + ChatMessage.User(it.userInput),
                     )
@@ -49,12 +59,19 @@ class ChatViewModel : ViewModel() {
                     val agent = createTripAgent(askUser) { message ->
                         when (message) {
                             is ChatMessage.ToolCall -> {
-                                _uiState.update {
-                                    it.copy(
-                                        userInput = "",
-                                        chatMessage = it.chatMessage + message,
-//                                        isLoading = false
-                                    )
+                                if (message.toolName == "AskUserInUI") {
+                                    _uiState.update {
+                                        it.copy(
+                                            userInput = message.content,
+                                            isLoading = false
+                                        )
+                                    }
+                                } else {
+                                    _uiState.update {
+                                        it.copy(
+                                            chatMessage = it.chatMessage + message,
+                                        )
+                                    }
                                 }
                             }
 
@@ -77,8 +94,10 @@ class ChatViewModel : ViewModel() {
                 } catch (e: Exception) {
                     _uiState.update {
                         it.copy(
+                            userInput = userInput, // rollback
                             chatMessage = it.chatMessage + ChatMessage.Assistant("Error: ${e.message}"),
-                            isLoading = false
+                            isLoading = false,
+                            isAgentActive = false
                         )
                     }
                 }
