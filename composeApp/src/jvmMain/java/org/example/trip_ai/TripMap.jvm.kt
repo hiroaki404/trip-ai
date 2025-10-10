@@ -7,3 +7,8 @@ import androidx.compose.ui.Modifier
 actual fun TripMap(point: ActivityPoint, modifier: Modifier) {
     // no display on desktop
 }
+
+@Composable
+actual fun TripMap(line: TransportationLine, modifier: Modifier) {
+    // no display on desktop
+}

@@ -10,6 +10,7 @@ import com.mapbox.geojson.Point
 import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.maps.extension.compose.annotation.generated.PointAnnotation
+import com.mapbox.maps.extension.compose.annotation.generated.PolylineAnnotation
 import com.mapbox.maps.extension.compose.annotation.rememberIconImage
 
 @Composable
@@ -42,4 +43,40 @@ fun MapContent(activityPoint: ActivityPoint) {
     }
 }
 
-fun ActivityPoint.toMapboxPoint(): Point = Point.fromLngLat(longitude, latitude)
+@Composable
+actual fun TripMap(line: TransportationLine, modifier: Modifier) {
+    if (LocalInspectionMode.current) {
+        Surface(
+            modifier = modifier.fillMaxSize(),
+            color = Color.Blue
+        ) {}
+    } else {
+        MapboxMap(
+            modifier = modifier,
+            mapViewportState = rememberMapViewportState {
+                setCameraOptions {
+                    zoom(9.0)
+                    if (line.line.isNotEmpty()) {
+                        center(Point.fromLngLat(line.line.first().longitude, line.line.first().latitude))
+                    }
+                }
+            }
+        ) {
+            MapContent(line)
+        }
+    }
+}
+
+@Composable
+fun MapContent(line: TransportationLine) {
+    PolylineAnnotation(
+        points = line.toMapboxPoints(),
+    ) {
+        lineWidth = 10.0
+        lineColor = Color.Red.copy(alpha = 0.5f)
+    }
+}
+
+fun ActivityPoint.toMapboxPoint(): Point = Point.fromLngLat(coordinate.longitude, coordinate.latitude)
+
+fun TransportationLine.toMapboxPoints(): List<Point> = line.map { Point.fromLngLat(it.longitude, it.latitude) }

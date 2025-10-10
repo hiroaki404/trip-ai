@@ -237,7 +237,7 @@ fun ActivityItem(activity: TripPlan.Step.ScheduleEntry.Activity) {
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             TripMap(
-                ActivityPoint(activity.longitude, activity.latitude),
+                ActivityPoint(Coordinate(activity.longitude, activity.latitude)),
                 modifier = Modifier.height(150.dp).clip(RoundedCornerShape(8.dp))
             )
             Row(modifier = Modifier.padding(top = 8.dp)) {
@@ -275,7 +275,16 @@ fun TransportationItem(transportation: TripPlan.Step.ScheduleEntry.Transportatio
         )
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Row {
+            TripMap(
+                TransportationLine(
+                    listOf(
+                        Coordinate(139.0, 35.0),
+                        Coordinate(140.0, 36.0)
+                    )
+                ),
+                modifier = Modifier.height(150.dp).clip(RoundedCornerShape(8.dp))
+            )
+            Row(modifier = Modifier.padding(top = 8.dp)) {
                 Text(
                     text = "🚃 ",
                     style = MaterialTheme.typography.labelMedium
