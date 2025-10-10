@@ -87,8 +87,10 @@ val systemPlanTripPrompt = """
 - 回数制限なし、必要に応じて何度でも使用可能
 
 **DirectionsTool/GeocodingToolの必須活用：**
-- **すべてのActivityに対してForwardGeocodeTool（場所名→緯度経度）を使用**
-- 必要に応じてDirectionsToolで経路情報を取得
+- **すべてのActivityに対してForwardGeocodeTool（場所名→緯度経度）を使用（必須）**
+- **すべてのTransportationに対してDirectionsToolで経路情報を取得（必須）**
+  - DirectionsToolで取得した座標リストをlineフィールドに設定
+  - 出発地（from）と目的地（to）の座標を使って経路を取得
 - これらのツールは回数制限なし、積極的に使用すること
 
 【作成する計画の構造】
@@ -116,6 +118,8 @@ val systemPlanTripPrompt = """
      * type: 交通手段の種類（例: "電車"、"バス"、"タクシー"、"徒歩"）
      * from: 出発地（具体的な場所名）
      * to: 目的地（具体的な場所名）
+     * line: 移動ルートの座標リスト（List<Point>型：各Pointはlongitudeとlatitudeを持つ）
+       ※DirectionsToolで取得した経路情報を使用（必須）
      * duration: 所要時間または時間帯（例: "30分"、"09:00-09:30"）
      * description: 移動の詳細説明（路線名、料金、乗り場、注意事項など）
        ※一般的な運賃や所要時間で十分（検索は不要）
@@ -147,7 +151,8 @@ $requestInfo
    - 一般的な観光地や交通機関の基本情報は検索不要
 2. **Scrape**: GoogleSearchで見つけたURLを積極的にScrapeで詳細情報を取得（回数制限なし）
 3. **ForwardGeocodeTool**: すべてのActivityで場所名から緯度経度を取得（必須）
-4. **DirectionsTool**: 必要に応じて経路情報を取得
+4. **DirectionsTool**: すべてのTransportationで経路情報を取得（必須）
+   - 出発地と目的地の座標を使って経路を取得し、lineフィールドに設定
 
 【出力形式】
 必ず以下のMarkdown形式に従ってください：
@@ -169,6 +174,8 @@ $requestInfo
 - type: 交通手段の種類（"電車"、"バス"、"タクシー"、"徒歩"など）
 - from: 出発地の具体的な場所名
 - to: 目的地の具体的な場所名
+- line: 移動ルートの座標リスト（List<Point>型：各Pointはlongitudeとlatitudeを持つ）
+  ※DirectionsToolで取得した経路情報を使用（必須）
 - duration: 所要時間（"30分"、"09:00-09:30"など）
 - description: 移動の詳細（路線名、料金、乗り場、注意事項など）
 
@@ -186,7 +193,7 @@ $requestInfo
 - 検索は優先度の高い情報のみ（3-5回程度）に絞る
 - 未確認の情報については、一般的なケースを想定して一つのプランを提案
 - ActivityとTransportationを時系列順に記録（朝食 → 移動 → 観光 → 移動...）
-- 移動が発生する場合は、必ずTransportationとして記録する
+- 移動が発生する場合は、必ずTransportationとして記録し、DirectionsToolで経路情報（line）を取得する
 - 具体的な施設名や観光地名を必ず含める
 - 実現可能で具体的な時間配分にする
 - 情報の正確性と効率性のバランスを取る
@@ -210,7 +217,17 @@ val tripPlanExample = TripPlan(
                     from = "羽田空港",
                     to = "浅草駅",
                     duration = "40分",
-                    description = "京急線・浅草線直通で浅草へ。運賃約600円。"
+                    description = "京急線・浅草線直通で浅草へ。運賃約600円。",
+                    line = listOf(
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7798, latitude = 35.5494),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.778, latitude = 35.560),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.777, latitude = 35.575),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.778, latitude = 35.590),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.780, latitude = 35.605),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.782, latitude = 35.615),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.785, latitude = 35.625),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7882, latitude = 35.6321)
+                    )
                 ),
                 Step.ScheduleEntry.Activity(
                     duration = "11:00-13:00",
@@ -231,7 +248,17 @@ val tripPlanExample = TripPlan(
                     from = "浅草駅",
                     to = "新宿駅",
                     duration = "30分",
-                    description = "銀座線で渋谷経由、JR山手線で新宿へ。運賃約200円。"
+                    description = "銀座線で渋谷経由、JR山手線で新宿へ。運賃約200円。",
+                    line = listOf(
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7882, latitude = 35.6321),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.780, latitude = 35.640),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.770, latitude = 35.650),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.758, latitude = 35.660),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.740, latitude = 35.670),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.725, latitude = 35.675),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.710, latitude = 35.677),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7041, latitude = 35.6778)
+                    )
                 ),
                 Step.ScheduleEntry.Activity(
                     duration = "15:00-16:00",
@@ -271,7 +298,14 @@ val tripPlanExample = TripPlan(
                     from = "新宿駅",
                     to = "渋谷駅",
                     duration = "10分",
-                    description = "JR山手線で渋谷へ。運賃約160円。"
+                    description = "JR山手線で渋谷へ。運賃約160円。",
+                    line = listOf(
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7034, latitude = 35.6938),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7036, latitude = 35.690),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7038, latitude = 35.685),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7037, latitude = 35.680),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7037, latitude = 35.6728)
+                    )
                 ),
                 Step.ScheduleEntry.Activity(
                     duration = "10:00-12:00",
@@ -292,7 +326,13 @@ val tripPlanExample = TripPlan(
                     from = "渋谷駅",
                     to = "原宿駅",
                     duration = "5分",
-                    description = "JR山手線で原宿へ。運賃約140円。"
+                    description = "JR山手線で原宿へ。運賃約140円。",
+                    line = listOf(
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7037, latitude = 35.6728),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7030, latitude = 35.6715),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7025, latitude = 35.6700),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7021, latitude = 35.6690)
+                    )
                 ),
                 Step.ScheduleEntry.Activity(
                     duration = "14:00-16:00",
@@ -313,7 +353,15 @@ val tripPlanExample = TripPlan(
                     from = "原宿駅",
                     to = "新宿駅",
                     duration = "10分",
-                    description = "JR山手線で新宿へ戻る。運賃約160円。"
+                    description = "JR山手線で新宿へ戻る。運賃約160円。",
+                    line = listOf(
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7021, latitude = 35.6690),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7020, latitude = 35.6750),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7019, latitude = 35.6800),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7018, latitude = 35.6850),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7017, latitude = 35.6900),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7034, latitude = 35.6938)
+                    )
                 ),
                 Step.ScheduleEntry.Activity(
                     duration = "19:00-21:00",
@@ -339,7 +387,15 @@ val tripPlanExample = TripPlan(
                     from = "新宿駅",
                     to = "東京駅",
                     duration = "15分",
-                    description = "JR中央線で東京駅へ。運賃約200円。"
+                    description = "JR中央線で東京駅へ。運賃約200円。",
+                    line = listOf(
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7034, latitude = 35.6938),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.710, latitude = 35.693),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.720, latitude = 35.692),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.725, latitude = 35.690),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.730, latitude = 35.688),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7353, latitude = 35.6875)
+                    )
                 ),
                 Step.ScheduleEntry.Activity(
                     duration = "10:00-11:30",
@@ -360,7 +416,18 @@ val tripPlanExample = TripPlan(
                     from = "東京駅",
                     to = "羽田空港",
                     duration = "30分",
-                    description = "京浜東北線・モノレールで羽田空港へ。運賃約500円。"
+                    description = "京浜東北線・モノレールで羽田空港へ。運賃約500円。",
+                    line = listOf(
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7671, latitude = 35.6812),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.770, latitude = 35.670),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.772, latitude = 35.655),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.774, latitude = 35.640),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.776, latitude = 35.625),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.778, latitude = 35.605),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.779, latitude = 35.580),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.780, latitude = 35.565),
+                        Step.ScheduleEntry.Transportation.Point(longitude = 139.7798, latitude = 35.5494)
+                    )
                 ),
                 Step.ScheduleEntry.Activity(
                     duration = "14:00-15:00",

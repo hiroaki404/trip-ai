@@ -277,10 +277,9 @@ fun TransportationItem(transportation: TripPlan.Step.ScheduleEntry.Transportatio
         Column(modifier = Modifier.padding(12.dp)) {
             TripMap(
                 TransportationLine(
-                    listOf(
-                        Coordinate(139.0, 35.0),
-                        Coordinate(140.0, 36.0)
-                    )
+                    transportation.line.map { point ->
+                        Coordinate(point.longitude, point.latitude)
+                    }
                 ),
                 modifier = Modifier.height(150.dp).clip(RoundedCornerShape(8.dp))
             )
@@ -337,7 +336,20 @@ fun AppContentPreview() {
                         from = "東京駅",
                         to = "鎌倉駅",
                         type = "電車",
-                        description = "JR横須賀線快速（運賃片道約620円）。車窓から東京湾や横浜の景色を楽しめます。"
+                        description = "JR横須賀線快速（運賃片道約620円）。車窓から東京湾や横浜の景色を楽しめます。",
+                        line = listOf(
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.767125, latitude = 35.681236),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.745, latitude = 35.658),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.720, latitude = 35.635),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.695, latitude = 35.610),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.670, latitude = 35.585),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.645, latitude = 35.560),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.620, latitude = 35.535),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.595, latitude = 35.520),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.575, latitude = 35.510),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.555, latitude = 35.505),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.534, latitude = 35.503)
+                        )
                     ),
                     TripPlan.Step.ScheduleEntry.Activity(
                         duration = "08:50-09:30",
@@ -351,7 +363,14 @@ fun AppContentPreview() {
                         from = "鶴岡八幡宮",
                         to = "小町通り入口",
                         type = "徒歩",
-                        description = "鎌倉駅方面へ下る小道を散策しながら移動。"
+                        description = "鎌倉駅方面へ下る小道を散策しながら移動。",
+                        line = listOf(
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.556443, latitude = 35.326124),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.556, latitude = 35.325),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.555, latitude = 35.324),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.554, latitude = 35.323),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.553571, latitude = 35.321708)
+                        )
                     ),
                     TripPlan.Step.ScheduleEntry.Activity(
                         duration = "09:35-10:20",
@@ -365,7 +384,18 @@ fun AppContentPreview() {
                         from = "鎌倉駅",
                         to = "長谷駅",
                         type = "電車",
-                        description = "江ノ電鎌倉駅2番線から長谷行き乗車（運賃200円）。海沿いの風景が魅力。"
+                        description = "江ノ電鎌倉駅2番線から長谷行き乗車（運賃200円）。海沿いの風景が魅力。",
+                        line = listOf(
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.550721, latitude = 35.317292),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.549, latitude = 35.317),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.548, latitude = 35.317),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.547, latitude = 35.317),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.546, latitude = 35.317),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.545, latitude = 35.317),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.544, latitude = 35.317),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.543, latitude = 35.317),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.542157, latitude = 35.31682)
+                        )
                     ),
                     TripPlan.Step.ScheduleEntry.Activity(
                         duration = "10:30-11:30",
@@ -379,7 +409,13 @@ fun AppContentPreview() {
                         from = "長谷寺",
                         to = "高徳院（大仏）",
                         type = "徒歩",
-                        description = "長谷の通り沿いに歩くと大仏のシルエットが見えてきます。"
+                        description = "長谷の通り沿いに歩くと大仏のシルエットが見えてきます。",
+                        line = listOf(
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.533571, latitude = 35.316693),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.5334, latitude = 35.3166),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.5333, latitude = 35.3165),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.533315, latitude = 35.316458)
+                        )
                     ),
                     TripPlan.Step.ScheduleEntry.Activity(
                         duration = "11:40-12:10",
@@ -393,7 +429,12 @@ fun AppContentPreview() {
                         from = "高徳院最寄り長谷駅",
                         to = "由比ヶ浜駅",
                         type = "電車",
-                        description = "昼食の「しらす問屋 とびっちょ」最寄り駅へ移動（運賃200円）。"
+                        description = "昼食の「しらす問屋 とびっちょ」最寄り駅へ移動（運賃200円）。",
+                        line = listOf(
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.542157, latitude = 35.31682),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.543, latitude = 35.317),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.543893, latitude = 35.317393)
+                        )
                     ),
                     TripPlan.Step.ScheduleEntry.Activity(
                         duration = "12:15-13:15",
@@ -407,7 +448,15 @@ fun AppContentPreview() {
                         from = "由比ヶ浜駅",
                         to = "鎌倉駅",
                         type = "電車",
-                        description = "江ノ電で鎌倉駅へ戻ります（運賃200円）。"
+                        description = "江ノ電で鎌倉駅へ戻ります（運賃200円）。",
+                        line = listOf(
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.543893, latitude = 35.317393),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.545, latitude = 35.317),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.547, latitude = 35.317),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.549, latitude = 35.317),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.551, latitude = 35.317),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.552561, latitude = 35.317639)
+                        )
                     ),
                     TripPlan.Step.ScheduleEntry.Activity(
                         duration = "13:30-15:00",
@@ -428,7 +477,20 @@ fun AppContentPreview() {
                         from = "鎌倉駅",
                         to = "東京駅",
                         type = "電車",
-                        description = "JR横須賀線快速で帰路へ。車内でお土産（クルミっ子など）を開封しながら湯河原の海景色を楽しめます。"
+                        description = "JR横須賀線快速で帰路へ。車内でお土産（クルミっ子など）を開封しながら湯河原の海景色を楽しめます。",
+                        line = listOf(
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.534, latitude = 35.503),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.555, latitude = 35.505),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.575, latitude = 35.510),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.595, latitude = 35.520),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.620, latitude = 35.535),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.645, latitude = 35.560),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.670, latitude = 35.585),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.695, latitude = 35.610),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.720, latitude = 35.635),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.745, latitude = 35.658),
+                            TripPlan.Step.ScheduleEntry.Transportation.Point(longitude = 139.767125, latitude = 35.681236)
+                        )
                     )
                 )
             )

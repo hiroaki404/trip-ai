@@ -48,11 +48,23 @@ data class TripPlan(
                 val from: String,
                 @property:LLMDescription("Destination location")
                 val to: String,
+                @property:LLMDescription("Tripe route path")
+                val line: List<Point>,
                 @property:LLMDescription("Duration or time range for this transportation")
                 override val duration: String,
                 @property:LLMDescription("Detailed description of the transportation")
                 override val description: String
-            ) : ScheduleEntry
+            ) : ScheduleEntry {
+
+                @Serializable
+                @LLMDescription("A point on a map")
+                data class Point(
+                    @property:LLMDescription("Longitude of the location")
+                    val longitude: Double,
+                    @property:LLMDescription("Latitude of the location")
+                    val latitude: Double,
+                )
+            }
         }
     }
 }
