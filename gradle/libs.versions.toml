@@ -17,6 +17,7 @@ kotlinx-coroutines = "1.10.2"
 koog = "0.5.0"
 kotlinx-serialization = "1.8.1"
 kotlinx-datetime = "0.6.2"
+mapbox = "11.15.2"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -33,6 +34,8 @@ kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-s
 koog-agents = { module = "ai.koog:koog-agents", version.ref = "koog" }
 koog-agents-features-opentelemetry = { module = "ai.koog:agents-features-opentelemetry", version.ref = "koog" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+mapbox = { module = "com.mapbox.maps:android", version.ref = "mapbox" }
+mapbox-compose = { module = "com.mapbox.extension:maps-compose", version.ref = "mapbox" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

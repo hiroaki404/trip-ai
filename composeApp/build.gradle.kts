@@ -27,6 +27,8 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.mapbox)
+            implementation(libs.mapbox.compose)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -93,6 +95,18 @@ compose.desktop {
             packageVersion = "1.0.0"
         }
     }
+}
+
+tasks.register("createMapboxResource") {
+    val mapboxAccessToken = System.getenv()["MAPBOX_ACCESS_TOKEN"]
+    val file = File("$rootDir/composeApp/src/androidMain/res/values/developer-config.xml")
+    file.writeText(
+        text = """<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mapbox_access_token">${mapboxAccessToken}</string>
+</resources>
+"""
+    )
 }
 
 afterEvaluate {
