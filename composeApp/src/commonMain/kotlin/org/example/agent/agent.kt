@@ -34,7 +34,7 @@ suspend fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage)
 
     return AIAgent<String, TripPlan>(
         promptExecutor = executor,
-        llmModel = OpenAIModels.CostOptimized.GPT4_1Mini,
+        llmModel = OpenAIModels.Chat.GPT5Mini,
         systemPrompt = """
         あなたは旅行プランナーです。ユーザーの指示に従って、旅行計画を立ててください。
         ただしユーザーの指示が少ないときは__ask_user__ツールを使って、1度はユーザーに情報提供を促してください。
