@@ -84,7 +84,7 @@ class ChatViewModel : ViewModel() {
                             else -> {}
                         }
                     }
-                    val response = agent.run(_uiState.value.userInput)
+                    val response = agent.run(userInput)
                     _uiState.update {
                         it.copy(
                             chatMessage = it.chatMessage + ChatMessage.Structured(response),
