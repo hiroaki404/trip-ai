@@ -13,6 +13,7 @@ import com.mapbox.maps.extension.compose.annotation.generated.PointAnnotation
 import com.mapbox.maps.extension.compose.annotation.generated.PolylineAnnotation
 import com.mapbox.maps.extension.compose.annotation.rememberIconImage
 
+// For preview
 @Composable
 actual fun TripMap(point: ActivityPoint, modifier: Modifier) {
     if (LocalInspectionMode.current) {
@@ -35,6 +36,7 @@ actual fun TripMap(point: ActivityPoint, modifier: Modifier) {
     }
 }
 
+// For preview
 @Composable
 fun MapContent(activityPoint: ActivityPoint) {
     val image = rememberIconImage(R.drawable.ic_red_circle)

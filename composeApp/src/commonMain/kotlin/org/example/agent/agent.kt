@@ -16,6 +16,7 @@ import org.example.tools.createMapMCP
 import org.example.trip_ai.ChatMessage
 
 suspend fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage) -> Unit): AIAgent<String, TripPlan> {
+    // not work in Android
     val apiKey = System.getenv("OPENAI_API_KEY")
     val googleApiKey = System.getenv("CUSTOM_SEARCH_API_KEY")
     val searchEngineId = System.getenv("SEARCH_ENGINE_ID")
@@ -23,6 +24,7 @@ suspend fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage)
     val npxCommandPath = System.getenv("NPX_COMMAND_PATH")
 
     val executor = simpleOpenAIExecutor(apiKey)
+    // not work in Android
     val mapTools = McpToolRegistryProvider.fromTransport(createMapMCP(mapboxAccessToken, npxCommandPath))
 
     val toolRegistry = ToolRegistry {

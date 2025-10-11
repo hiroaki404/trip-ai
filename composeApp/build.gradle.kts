@@ -41,6 +41,8 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.koog.agents)
             implementation(libs.koog.agents.features.opentelemetry)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.okhttp)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -48,6 +50,7 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+            implementation(libs.mapbox.services)
         }
     }
 }
