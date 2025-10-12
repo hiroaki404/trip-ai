@@ -24,12 +24,13 @@ suspend fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage)
     val npxCommandPath = System.getenv("NPX_COMMAND_PATH")
 
     val executor = simpleOpenAIExecutor(apiKey)
+    val webSearchTools = WebSearchTools(googleApiKey, searchEngineId)
     // not work in Android
     val mapTools = McpToolRegistryProvider.fromTransport(createMapMCP(mapboxAccessToken, npxCommandPath))
 
     val toolRegistry = ToolRegistry {
         tool(askUser)
-        tools(WebSearchTools(googleApiKey, searchEngineId).asTools())
+        tools(webSearchTools.asTools())
     } + mapTools
 
     return AIAgent<String, TripPlan>(
@@ -44,7 +45,7 @@ suspend fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage)
         あまり細かく聞きすぎず、ある程度分かったところで計画を立ててください
         """.trimIndent(),
         toolRegistry = toolRegistry,
-        strategy = createTripPlanningStrategy()
+        strategy = createTripPlanningStrategy(askUser, webSearchTools, mapTools)
     ) {
         install(OpenTelemetry) {
             setVerbose(true)
