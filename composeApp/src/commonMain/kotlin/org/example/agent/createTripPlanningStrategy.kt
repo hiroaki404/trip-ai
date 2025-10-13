@@ -52,7 +52,7 @@ fun createTripPlanningStrategy(
         "tripPlanStructured",
         examples = listOf(tripPlanExample),
         fixingParser = StructureFixingParser(
-            fixingModel = OpenAIModels.Chat.GPT4o,
+            fixingModel = OpenAIModels.Chat.GPT5Mini,
             retries = 2
         )
     )
