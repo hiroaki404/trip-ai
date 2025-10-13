@@ -29,7 +29,6 @@ fun createTripPlanningStrategy(
 
     val nodeClarifyUserRequest by subgraphWithTask<String, String>(
         tools = listOf(askTool),
-        llmModel = OpenAIModels.Reasoning.O4Mini
     ) { userInput ->
         clarifyRequestPrompt(userInput)
     }
@@ -45,7 +44,6 @@ fun createTripPlanningStrategy(
 
     val nodePlanTrip by subgraphWithTask<String, String>(
         tools = webSearchTools.asTools() + map.tools,
-        llmModel = OpenAIModels.Reasoning.O4Mini
     ) { requestInfo ->
         planTripPrompt(requestInfo)
     }
