@@ -3,19 +3,19 @@ package org.example.agent
 import ai.koog.agents.core.dsl.builder.forwardTo
 import ai.koog.agents.core.dsl.builder.strategy
 import ai.koog.agents.core.dsl.extension.nodeLLMRequestStructured
-import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.agents.core.tools.reflect.asTools
 import ai.koog.agents.ext.agent.subgraphWithTask
-import ai.koog.prompt.executor.clients.openai.OpenAIModels
+import ai.koog.prompt.executor.clients.google.GoogleModels
 import ai.koog.prompt.structure.StructureFixingParser
 import org.example.prompt.*
 import org.example.tools.AskUserInUI
+import org.example.tools.DirectionsTool
 import org.example.tools.WebSearchTools
 
 fun createTripPlanningStrategy(
     askTool: AskUserInUI,
     webSearchTools: WebSearchTools,
-    map: ToolRegistry, // must be MapMcp, FIXME
+    directionsTool: DirectionsTool,
 ) = strategy<String, TripPlan>("trip-planning") {
 
     val nodeBeforeClarifyUserRequest by node<String, String> { userInput ->
@@ -43,7 +43,7 @@ fun createTripPlanningStrategy(
     }
 
     val nodePlanTrip by subgraphWithTask<String, String>(
-        tools = webSearchTools.asTools() + map.tools,
+        tools = webSearchTools.asTools() + directionsTool,
     ) { requestInfo ->
         planTripPrompt(requestInfo)
     }
