@@ -65,7 +65,7 @@ val systemPlanTripPrompt = """
 
 【計画作成の原則】
 - 収集済み情報を最大限活用する
-- **利用可能なツールを積極的に活用して、正確で詳細な旅行計画を作成する**
+- **ツールは重要なところでのみ使用し、基本的に一般知識で詳細な旅行計画を作成する**
 - 未確認の情報がある場合は、最も一般的な想定で一つのプランを提示
 - 季節や時期に合った提案を行う
 - 実現可能性を重視し、無理のないスケジュールを組む
@@ -74,24 +74,24 @@ val systemPlanTripPrompt = """
 【ツールの活用方針】
 
 **GoogleSearchの使用制限（重要）：**
-- GoogleSearchの使用回数は3-5回程度に抑える（コストと時間の効率化のため）
-- 一般的に知られている情報は検索不要
-- 以下の情報のみGoogleSearchで検索：
-  1. 特別なイベントや季節限定の催し
-  2. ユーザーが特に訪問したいと述べた施設の最新情報
-  3. 地域の最新トレンドや話題のスポット
+- GoogleSearchの使用回数は0-2回程度に抑える（コストと時間の効率化のため）
+- 基本的に一般知識で対応し、検索は極力避ける
+- 以下の場合のみ検索を検討：
+  1. ユーザーが明示的に指定した特定施設の最新情報が必要な場合
+  2. 特別なイベントや季節限定情報が旅程に不可欠な場合
 
-**Scrapeの積極的な活用：**
-- GoogleSearchで見つけたURLは積極的にScrapeで詳細情報を取得
-- 公式サイトの営業時間、料金、定休日などを確認
-- 回数制限なし、必要に応じて何度でも使用可能
+**Scrapeの使用制限：**
+- Scrapeの使用は1-2回程度に抑える
+- GoogleSearchで重要な情報を見つけた場合のみ使用
 
-**DirectionsTool/GeocodingToolの必須活用：**
-- **すべてのActivityに対してForwardGeocodeTool（場所名→緯度経度）を使用（必須）**
+**DirectionsTool/GeocodingToolの使用制限：**
+- **ForwardGeocodeTool（場所名→緯度経度）は主要なActivityのみ使用（2-3個程度）**
+  - 旅程の最初と最後のActivity、または最も重要なActivityのみ取得
+  - その他のActivityは推定座標または近似値でOK
 - **すべてのTransportationに対してDirectionsToolで経路情報を取得（必須）**
-  - DirectionsToolで取得した座標リストをlineフィールドに設定
-  - 出発地（from）と目的地（to）の座標を使って経路を取得
-- これらのツールは回数制限なし、積極的に使用すること
+  - DirectionsToolで取得してlineIdフィールドに設定
+  - 出発地（from）と目的地（to）の座標を使って経路のidを取得
+- **合計tool呼び出し回数は5-10回程度を目安とする**
 
 【作成する計画の構造】
 以下のMarkdown形式で旅行計画を作成してください：
@@ -111,14 +111,14 @@ val systemPlanTripPrompt = """
      * description: 活動の詳細な説明（観光スポット、食事、宿泊など具体的な内容）
        ※検索で確認した情報があれば営業時間、料金などを含める
      * location: 活動を行う場所（具体的な施設名や地域名）
-     * longitude: 場所の経度（ForwardGeocodeToolで取得）
-     * latitude: 場所の緯度（ReverseGeocodeToolで取得）
+     * longitude: 場所の経度（主要なActivityのみForwardGeocodeToolで取得、その他は推定値）
+     * latitude: 場所の緯度（主要なActivityのみForwardGeocodeToolで取得、その他は推定値）
 
      Transportationには以下を含める：
      * type: 交通手段の種類（例: "電車"、"バス"、"タクシー"、"徒歩"）
      * from: 出発地（具体的な場所名）
      * to: 目的地（具体的な場所名）
-     * line: 移動ルートの座標リスト（List<Point>型：各Pointはlongitudeとlatitudeを持つ）
+     * lineId: 移動ルートを識別するID（String型）
        ※DirectionsToolで取得した経路情報を使用（必須）
      * duration: 所要時間または時間帯（例: "30分"、"09:00-09:30"）
      * description: 移動の詳細説明（路線名、料金、乗り場、注意事項など）
@@ -149,13 +149,16 @@ fun planTripPrompt(requestInfo: String) = """
 $requestInfo
 
 【重要】ツールの活用方針：
-1. **GoogleSearch**: 3-5回程度に抑える（優先度の高い情報のみ）
-   - 特別なイベントや季節限定情報など、確認が必要な重要情報のみ検索
+1. **GoogleSearch**: 0-2回程度に抑える（基本的に一般知識で対応）
+   - ユーザーが明示的に指定した施設や、旅程に不可欠な特別情報のみ検索
    - 一般的な観光地や交通機関の基本情報は検索不要
-2. **Scrape**: GoogleSearchで見つけたURLを積極的にScrapeで詳細情報を取得（回数制限なし）
-3. **ForwardGeocodeTool**: すべてのActivityで場所名から緯度経度を取得（必須）
+2. **Scrape**: 0-1回程度に抑える（重要な情報のみ）
+3. **ForwardGeocodeTool**: 主要なActivityのみで場所名から緯度経度を取得（2-3個程度）
+   - 旅程の最初と最後、または最も重要なActivityのみ
+   - その他は推定座標でOK
 4. **DirectionsTool**: すべてのTransportationで経路情報を取得（必須）
-   - 出発地と目的地の座標を使って経路を取得し、lineフィールドに設定
+   - 重要な移動のみ経路情報を取得し、lineIdフィールドに設定
+5. **合計tool呼び出し回数は5-10回程度を目安とする**
 
 【出力形式】
 必ず以下のMarkdown形式に従ってください：
@@ -170,14 +173,14 @@ $requestInfo
 - description: 活動の詳細（場所の説明、食事内容など）
   ※検索で確認した情報があれば含める
 - location: 具体的な場所名（施設名、地域名、レストラン名など）
-- longitude: 場所の経度（ForwardGeocodeToolで取得）
-- latitude: 場所の緯度（ForwardGeocodeToolで取得）
+- longitude: 場所の経度（主要なActivityのみForwardGeocodeToolで取得、その他は推定値）
+- latitude: 場所の緯度（主要なActivityのみForwardGeocodeToolで取得、その他は推定値）
 
 ### Transportation
 - type: 交通手段の種類（"電車"、"バス"、"タクシー"、"徒歩"など）
 - from: 出発地の具体的な場所名
 - to: 目的地の具体的な場所名
-- line: 移動ルートの座標リスト（List<Point>型：各Pointはlongitudeとlatitudeを持つ）
+- lineId: 移動ルートを識別するID（String型）
   ※DirectionsToolで取得した経路情報を使用（必須）
 - duration: 所要時間（"30分"、"09:00-09:30"など）
 - description: 移動の詳細（路線名、料金、乗り場、注意事項など）
@@ -193,10 +196,12 @@ $requestInfo
 ...
 
 【注意事項】
-- 検索は優先度の高い情報のみ（3-5回程度）に絞る
+- **合計tool呼び出し回数は5-10回程度を目安とする**
+- 重要なところのみ検索し、一般知識で対応（0-2回程度）
 - 未確認の情報については、一般的なケースを想定して一つのプランを提案
 - ActivityとTransportationを時系列順に記録（朝食 → 移動 → 観光 → 移動...）
-- 移動が発生する場合は、必ずTransportationとして記録し、DirectionsToolで経路情報（line）を取得する
+- 移動が発生する場合は、必ずTransportationとして記録
+- 移動が発生する場合は、必ずTransportationとして記録し、DirectionsToolで経路情報（lineId）を取得する
 - 具体的な施設名や観光地名を必ず含める
 - 実現可能で具体的な時間配分にする
 - **Activityの滞在時間は最低1時間以上とする。観光スポットでは基本的に2時間は滞在する**
