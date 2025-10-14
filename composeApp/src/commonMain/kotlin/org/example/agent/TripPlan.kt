@@ -2,6 +2,7 @@ package org.example.agent
 
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import kotlinx.serialization.Serializable
+import org.example.trip_ai.Coordinate
 
 @Serializable
 @LLMDescription("A complete trip plan containing a summary and daily steps")
@@ -69,4 +70,7 @@ data class Line(
         val longitude: Double,
         val latitude: Double
     )
+
+    fun toCoordinate() = points.map { Coordinate(it.longitude, it.latitude) }
+
 }

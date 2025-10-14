@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.example.agent.TripPlan
+import org.example.storage.LineStorage
 import org.example.tokyoToKamakura
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -296,8 +297,9 @@ fun TransportationItem(transportation: TripPlan.Step.ScheduleEntry.Transportatio
         )
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
+            val line = LineStorage.getLine(transportation.lineId)?.toCoordinate().orEmpty()
             TripMap(
-                TransportationLine(emptyList()), // TODO: get line points from lineId
+                TransportationLine(line),
                 modifier = Modifier.height(150.dp).clip(RoundedCornerShape(8.dp))
             )
             Row(modifier = Modifier.padding(top = 8.dp)) {
