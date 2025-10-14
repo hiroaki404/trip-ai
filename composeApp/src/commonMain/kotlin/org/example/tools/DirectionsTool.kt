@@ -13,6 +13,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.example.agent.Line
+import org.example.storage.LineStorage
 
 @Serializable
 data class RouteResponse(
@@ -79,6 +80,9 @@ class DirectionsTool(
         }
         val response = client.get(dynamicUrl)
         val line = response.body<RouteResponse>().toLine()
+
+        LineStorage.saveLine(line)
+
         return line.id
     }
 }

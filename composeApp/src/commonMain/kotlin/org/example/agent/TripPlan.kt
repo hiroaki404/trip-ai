@@ -59,10 +59,12 @@ data class TripPlan(
     }
 }
 
+@Serializable
 data class Line(
     val id: String,
     val points: List<Point>
 ) {
+    @Serializable
     data class Point(
         val longitude: Double,
         val latitude: Double
