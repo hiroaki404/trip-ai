@@ -58,6 +58,7 @@ suspend fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage)
         """.trimIndent(),
         toolRegistry = toolRegistry,
         strategy = createTripPlanningStrategy(askUser, webSearchTools, directionsTool),
+        maxIterations = 100
     ) {
         install(OpenTelemetry) {
             setVerbose(true)
