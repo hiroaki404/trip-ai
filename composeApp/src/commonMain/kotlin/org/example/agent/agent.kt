@@ -11,6 +11,7 @@ import ai.koog.prompt.executor.clients.google.GoogleModels
 import ai.koog.prompt.executor.llms.all.simpleGoogleAIExecutor
 import ai.koog.prompt.executor.llms.all.simpleOllamaAIExecutor
 import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
+import ai.koog.prompt.executor.llms.all.simpleOpenRouterExecutor
 import ai.koog.prompt.message.Message
 import org.example.tools.AskUserInUI
 import org.example.tools.DirectionsTool
@@ -31,7 +32,7 @@ suspend fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage)
 
     val openAIExecutor = simpleOpenAIExecutor(openAIApiKey)
     val geminiExecutor = simpleGoogleAIExecutor(geminiApiKey)
-    val openRouterExecutor = simpleOpenAIExecutor(openRouterApiKey)
+    val openRouterExecutor = simpleOpenRouterExecutor(openRouterApiKey)
     val ollamaExecutor = simpleOllamaAIExecutor()
 
     val webSearchTools = WebSearchTools(googleApiKey, searchEngineId)
