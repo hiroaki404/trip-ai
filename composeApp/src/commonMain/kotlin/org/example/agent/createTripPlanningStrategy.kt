@@ -5,7 +5,7 @@ import ai.koog.agents.core.dsl.builder.strategy
 import ai.koog.agents.core.dsl.extension.nodeLLMRequestStructured
 import ai.koog.agents.core.tools.reflect.asTools
 import ai.koog.agents.ext.agent.subgraphWithTask
-import ai.koog.prompt.executor.clients.openrouter.OpenRouterModels
+import ai.koog.prompt.executor.clients.google.GoogleModels
 import ai.koog.prompt.structure.StructureFixingParser
 import org.example.prompt.*
 import org.example.tools.AskUserInUI
@@ -52,7 +52,7 @@ fun createTripPlanningStrategy(
         "tripPlanStructured",
         examples = listOf(tripPlanExample),
         fixingParser = StructureFixingParser(
-            fixingModel = OpenRouterModels.GPT_OSS_120b,
+            fixingModel = GoogleModels.Gemini2_0Flash,
             retries = 2
         )
     )

@@ -7,8 +7,10 @@ import ai.koog.agents.features.eventHandler.feature.handleEvents
 import ai.koog.agents.features.opentelemetry.feature.OpenTelemetry
 import ai.koog.agents.features.opentelemetry.integration.langfuse.addLangfuseExporter
 import ai.koog.agents.mcp.McpToolRegistryProvider
-import ai.koog.prompt.executor.clients.openrouter.OpenRouterModels
-import ai.koog.prompt.executor.llms.all.simpleOpenRouterExecutor
+import ai.koog.prompt.executor.clients.google.GoogleModels
+import ai.koog.prompt.executor.llms.all.simpleGoogleAIExecutor
+import ai.koog.prompt.executor.llms.all.simpleOllamaAIExecutor
+import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
 import ai.koog.prompt.message.Message
 import org.example.tools.AskUserInUI
 import org.example.tools.DirectionsTool
@@ -27,7 +29,10 @@ suspend fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage)
     val mapboxAccessToken = System.getenv("MAPBOX_ACCESS_TOKEN")
     val npxCommandPath = System.getenv("NPX_COMMAND_PATH")
 
-    val openRouterExecutor = simpleOpenRouterExecutor(openRouterApiKey)
+    val openAIExecutor = simpleOpenAIExecutor(openAIApiKey)
+    val geminiExecutor = simpleGoogleAIExecutor(geminiApiKey)
+    val openRouterExecutor = simpleOpenAIExecutor(openRouterApiKey)
+    val ollamaExecutor = simpleOllamaAIExecutor()
 
     val webSearchTools = WebSearchTools(googleApiKey, searchEngineId)
     // not work in Android
@@ -41,8 +46,8 @@ suspend fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage)
     }
 
     return AIAgent<String, TripPlan>(
-        promptExecutor = openRouterExecutor,
-        llmModel = OpenRouterModels.GPT_OSS_120b,
+        promptExecutor = geminiExecutor,
+        llmModel = GoogleModels.Gemini2_0Flash,
         systemPrompt = """
         あなたは旅行プランナーです。ユーザーの指示に従って、旅行計画を立ててください。
         ただしユーザーの指示が少ないときは__ask_user__ツールを使って、1度はユーザーに情報提供を促してください。
