@@ -335,7 +335,7 @@ fun TransportationItem(transportation: TripPlan.Step.ScheduleEntry.Transportatio
     }
 }
 
-@Preview(showBackground = true, heightDp = 1200)
+@Preview(showBackground = true, widthDp = 800,heightDp = 1800)
 @Composable
 fun AppContentPreview() {
     val lineMap = mapOf(
@@ -394,8 +394,31 @@ fun AppContentPreview() {
         userInput = "",
         isLoading = false,
         chatMessage = listOf(
-            ChatMessage.User("東京駅から日帰りで鎌倉に行きたいです"),
-            ChatMessage.Assistant("承知しました。東京駅発の日帰り鎌倉旅行プランを作成します。"),
+            ChatMessage.User("日帰り鎌倉旅行の計画を立てて\n" +
+                    "東京から出発します。\n" +
+                    "10月中旬での予定で、夫婦二人でいきます。\n" +
+                    "特に行きたいところの希望はありません。"),
+            ChatMessage.ToolCall(
+                toolName = "__ask_user__",
+                content = "鎌倉への日帰り旅行のご相談ですね！承知いたしました。東京からのご出発で、10月中旬に夫婦お二人でのご旅行とのこと、かしこまりました。鎌倉は私も大好きな場所なので、ぜひ素敵な思い出作りのお手伝いをさせてください。予算についてお伺いしてもよろしいでしょうか？大体の目安で構いませんので、教えていただけますでしょうか。"
+            ),
+            ChatMessage.User("予算は一人2万円です"),
+            ChatMessage.ToolCall(
+                toolName = "__ask_user__",
+                content = "ご予算は一人2万円ですね、承知いたしました。鎌倉は日帰りでも十分に楽しめるスポットがたくさんあります。せっかくなので、お二人のご興味や体力に合わせて、どのような過ごし方がご希望かもう少し詳しくお伺いしてもよろしいでしょうか？例えば、お寺巡りがお好きとか、海を見ながらのんびりしたい、美味しいものを食べ歩きしたい、など何かイメージがあれば教えてください。"
+            ),
+            ChatMessage.ToolCall(
+                toolName = "websearch",
+                content = "search is Called"
+            ),
+            ChatMessage.ToolCall(
+                toolName = "scrape",
+                content = "scrape is Called"
+            ),
+            ChatMessage.ToolCall(
+                toolName = "directions",
+                content = "directions is Called"
+            ),
             ChatMessage.Structured(samplePlan)
         )
     )
