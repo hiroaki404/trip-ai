@@ -70,8 +70,7 @@ suspend fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage)
                 when (val tool = it.tool) {
                     is AskUserInUI -> {
                         onMessageUpdate(
-                            ChatMessage.ToolCall(
-                                tool.name,
+                            ChatMessage.AskToolCall(
                                 (it.toolArgs as AskUserInUI.Args).message
                             )
                         )

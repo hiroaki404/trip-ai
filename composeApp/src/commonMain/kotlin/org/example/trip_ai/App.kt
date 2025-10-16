@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,6 +24,8 @@ import org.example.storage.LineStorage
 import org.example.tokyoToKamakura
 import org.example.trip_ai.theme.TripAITheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 @Composable
 fun App(modifier: Modifier = Modifier) {
@@ -45,33 +49,93 @@ fun AppContent(
     modifier: Modifier = Modifier,
     onSendMessage: () -> Unit
 ) {
-    val focusRequester = remember { FocusRequester() }
-
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-    }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text(
-            text = "旅行計画エージェント",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
+        TitleSection( modifier = Modifier.padding(bottom = 16.dp) )
+
+        // チャットメッセージリスト（スクロール可能）
+        ChatMessageList(
+            messages = uiState.chatMessage,
+            isLoading = uiState.isLoading,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
         )
 
+        // 入力エリア（画面下部に固定）
+        ChatInputSection(
+            userInput = uiState.userInput,
+            isLoading = uiState.isLoading,
+            onUserInputChange = onUserInputChange,
+            onSendMessage = onSendMessage,
+        )
+    }
+}
+
+@Composable
+fun TitleSection(
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = "旅行計画エージェント",
+        style = MaterialTheme.typography.headlineMedium,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun ChatMessageList(
+    messages: List<ChatMessage>,
+    isLoading: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.verticalScroll(rememberScrollState())
+    ) {
+        if (messages.isNotEmpty()) {
+            messages.forEach { message ->
+                ChatMessageItem(message)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+        }
+    }
+}
+
+@Composable
+fun ChatInputSection(
+    userInput: String,
+    isLoading: Boolean,
+    onUserInputChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    onSendMessage: () -> Unit,
+) {
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+
+    Row(
+        modifier = modifier.fillMaxWidth().padding(top = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         TextField(
-            value = uiState.userInput,
+            value = userInput,
             onValueChange = onUserInputChange,
             label = { Text("旅行の内容を入力してください") },
             modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp)
+                .weight(1f)
                 .focusRequester(focusRequester)
                 .onPreviewKeyEvent { keyEvent ->
-                    if (keyEvent.key == Key.Enter && keyEvent.type == KeyEventType.KeyDown && keyEvent.isMetaPressed && uiState.userInput.isNotBlank()) {
+                    if (keyEvent.key == Key.Enter && keyEvent.type == KeyEventType.KeyDown && keyEvent.isMetaPressed && userInput.isNotBlank()) {
                         onSendMessage()
                         true
                     } else {
@@ -81,34 +145,17 @@ fun AppContent(
             maxLines = 5
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
+        FilledTonalIconButton(
             onClick = onSendMessage,
-            enabled = uiState.userInput.isNotBlank(),
-            modifier = Modifier.fillMaxWidth()
+            enabled = userInput.isNotBlank() && !isLoading,
+            modifier = Modifier.align(androidx.compose.ui.Alignment.Bottom)
+                .padding(bottom = 2.dp)
+                .offset(x = 2.dp)
         ) {
-            Text(if (uiState.isLoading) "実行中..." else "送信")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (uiState.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.padding(16.dp))
-        }
-
-        if (uiState.chatMessage.isNotEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                uiState.chatMessage.forEach { message ->
-                    ChatMessageItem(message)
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.Send,
+                contentDescription = "icon",
+            )
         }
     }
 }
@@ -157,6 +204,29 @@ fun ChatMessageItem(message: ChatMessage) {
                         text = message.content,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+            }
+        }
+
+        is ChatMessage.AskToolCall -> {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                )
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        text = "アシスタント（AskTool）",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = message.content,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -335,7 +405,41 @@ fun TransportationItem(transportation: TripPlan.Step.ScheduleEntry.Transportatio
     }
 }
 
-@Preview(showBackground = true, widthDp = 800,heightDp = 1800)
+data class ChatInputState(
+    val userInput: String,
+    val isLoading: Boolean
+)
+
+class ChatInputPreviewParameterProvider : PreviewParameterProvider<ChatInputState> {
+    val inputText = "日帰り鎌倉旅行の計画を立てて\n" +
+            "東京から出発します。\n" +
+            "10月中旬での予定で、夫婦二人でいきます。\n" +
+            "特に行きたいところの希望はありません。"
+
+    override val values = sequenceOf(
+        ChatInputState("", false), // 入力なし
+        ChatInputState(inputText, false), // 入力あり
+        ChatInputState(inputText, true) // ローディング中
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ChatInputSectionPreview(
+    @PreviewParameter(ChatInputPreviewParameterProvider::class) state: ChatInputState
+) {
+    TripAITheme {
+        ChatInputSection(
+            userInput = state.userInput,
+            isLoading = state.isLoading,
+            onUserInputChange = {},
+            onSendMessage = {},
+            modifier = Modifier.padding(16.dp)
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 800, heightDp = 1500)
 @Composable
 fun AppContentPreview() {
     val lineMap = mapOf(
@@ -392,21 +496,22 @@ fun AppContentPreview() {
 
     val previewState = ChatUiState(
         userInput = "",
-        isLoading = false,
+        isLoading = true,
         chatMessage = listOf(
-            ChatMessage.User("日帰り鎌倉旅行の計画を立てて\n" +
-                    "東京から出発します。\n" +
-                    "10月中旬での予定で、夫婦二人でいきます。\n" +
-                    "特に行きたいところの希望はありません。"),
-            ChatMessage.ToolCall(
-                toolName = "__ask_user__",
+            ChatMessage.User(
+                "日帰り鎌倉旅行の計画を立てて\n" +
+                        "東京から出発します。\n" +
+                        "10月中旬での予定で、夫婦二人でいきます。\n" +
+                        "特に行きたいところの希望はありません。"
+            ),
+            ChatMessage.AskToolCall(
                 content = "鎌倉への日帰り旅行のご相談ですね！承知いたしました。東京からのご出発で、10月中旬に夫婦お二人でのご旅行とのこと、かしこまりました。鎌倉は私も大好きな場所なので、ぜひ素敵な思い出作りのお手伝いをさせてください。予算についてお伺いしてもよろしいでしょうか？大体の目安で構いませんので、教えていただけますでしょうか。"
             ),
             ChatMessage.User("予算は一人2万円です"),
-            ChatMessage.ToolCall(
-                toolName = "__ask_user__",
+            ChatMessage.AskToolCall(
                 content = "ご予算は一人2万円ですね、承知いたしました。鎌倉は日帰りでも十分に楽しめるスポットがたくさんあります。せっかくなので、お二人のご興味や体力に合わせて、どのような過ごし方がご希望かもう少し詳しくお伺いしてもよろしいでしょうか？例えば、お寺巡りがお好きとか、海を見ながらのんびりしたい、美味しいものを食べ歩きしたい、など何かイメージがあれば教えてください。"
             ),
+            ChatMessage.User("特にありません"),
             ChatMessage.ToolCall(
                 toolName = "websearch",
                 content = "search is Called"

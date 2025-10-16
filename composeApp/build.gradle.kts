@@ -43,6 +43,7 @@ kotlin {
             implementation(libs.koog.agents.features.opentelemetry)
             implementation(libs.coil.compose)
             implementation(libs.coil.okhttp)
+            implementation(libs.material.icons)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

@@ -14,6 +14,7 @@ import org.example.tools.AskUserInUI
 sealed interface ChatMessage {
     data class User(val content: String) : ChatMessage
     data class Assistant(val content: String) : ChatMessage
+    data class AskToolCall(val content: String) : ChatMessage
     data class ToolCall(val toolName: String, val content: String) : ChatMessage
     data class Structured(val content: TripPlan) : ChatMessage
 }
@@ -58,20 +59,20 @@ class ChatViewModel : ViewModel() {
                 try {
                     val agent = createTripAgent(askUser) { message ->
                         when (message) {
+                            is ChatMessage.AskToolCall -> {
+                                _uiState.update {
+                                    it.copy(
+                                        userInput = message.content,
+                                        isLoading = false
+                                    )
+                                }
+                            }
+
                             is ChatMessage.ToolCall -> {
-                                if (message.toolName == "AskUserInUI") {
-                                    _uiState.update {
-                                        it.copy(
-                                            userInput = message.content,
-                                            isLoading = false
-                                        )
-                                    }
-                                } else {
-                                    _uiState.update {
-                                        it.copy(
-                                            chatMessage = it.chatMessage + message,
-                                        )
-                                    }
+                                _uiState.update {
+                                    it.copy(
+                                        chatMessage = it.chatMessage + message,
+                                    )
                                 }
                             }
 

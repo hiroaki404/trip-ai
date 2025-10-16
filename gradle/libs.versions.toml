@@ -20,6 +20,7 @@ kotlinx-datetime = "0.6.2"
 mapbox = "11.15.2"
 mapbox-services = "7.8.0"
 coil = "3.3.0"
+material-icons = "1.7.3"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -41,6 +42,7 @@ mapbox-compose = { module = "com.mapbox.extension:maps-compose", version.ref = "
 mapbox-services = { module = "com.mapbox.mapboxsdk:mapbox-sdk-services", version.ref = "mapbox-services" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+material-icons = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "material-icons" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
