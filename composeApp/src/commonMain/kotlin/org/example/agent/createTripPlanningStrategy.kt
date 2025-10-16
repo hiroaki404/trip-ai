@@ -27,7 +27,7 @@ fun createTripPlanningStrategy(
         userInput
     }
 
-    val nodeClarifyUserRequest by subgraphWithTask<String, String>(
+    val clarifyUserRequest by subgraphWithTask<String, String>(
         tools = listOf(askTool),
     ) { userInput ->
         clarifyRequestPrompt(userInput)
@@ -42,7 +42,7 @@ fun createTripPlanningStrategy(
         requestInfo
     }
 
-    val nodePlanTrip by subgraphWithTask<String, String>(
+    val planTrip by subgraphWithTask<String, String>(
         tools = webSearchTools.asTools() + directionsTool,
     ) { requestInfo ->
         planTripPrompt(requestInfo)
@@ -57,7 +57,7 @@ fun createTripPlanningStrategy(
         )
     )
 
-    nodeStart then nodeBeforeClarifyUserRequest then nodeClarifyUserRequest then nodeBeforePlanTrip then nodePlanTrip then nodeStructuredOutput
+    nodeStart then nodeBeforeClarifyUserRequest then clarifyUserRequest then nodeBeforePlanTrip then planTrip then nodeStructuredOutput
     edge(
         nodeStructuredOutput forwardTo nodeFinish
                 transformed { it.getOrThrow().structure }
