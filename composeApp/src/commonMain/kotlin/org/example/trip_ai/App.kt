@@ -20,6 +20,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import org.example.agent.TripPlan
 import org.example.storage.LineStorage
 import org.example.tokyoToKamakura
+import org.example.trip_ai.theme.TripAITheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -27,7 +28,7 @@ fun App(modifier: Modifier = Modifier) {
     val viewModel: ChatViewModel = viewModel { ChatViewModel() }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    MaterialTheme {
+    TripAITheme {
         AppContent(
             modifier = modifier,
             uiState = uiState,
@@ -399,7 +400,7 @@ fun AppContentPreview() {
         )
     )
 
-    MaterialTheme {
+    TripAITheme {
         AppContent(
             uiState = previewState,
             onUserInputChange = {},
