@@ -17,7 +17,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -30,6 +29,9 @@ import org.example.trip_ai.theme.TripAITheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
+import org.jetbrains.compose.resources.painterResource
+import trip_ai.composeapp.generated.resources.Res
+import trip_ai.composeapp.generated.resources.ic_smart_toy
 
 @Composable
 fun App(modifier: Modifier = Modifier) {
@@ -166,9 +168,9 @@ fun ChatInputSection(
 
 @Composable
 fun MessageCard(
-    icon: ImageVector,
+    iconContent: @Composable () -> Unit,
     label: String,
-    content: String,
+    content: String?,
     containerColor: Color,
     contentColor: Color,
     alignEnd: Boolean = false,
@@ -196,12 +198,7 @@ fun MessageCard(
                     verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = contentColor,
-                        modifier = Modifier.size(18.dp)
-                    )
+                    iconContent()
                     Text(
                         text = label,
                         style = MaterialTheme.typography.titleSmall,
@@ -209,12 +206,14 @@ fun MessageCard(
                         color = contentColor
                     )
                 }
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = content,
-                    style = contentTextStyle,
-                    color = contentColor
-                )
+                content?.let {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = content,
+                        style = contentTextStyle,
+                        color = contentColor
+                    )
+                }
             }
         }
 
@@ -229,7 +228,14 @@ fun ChatMessageItem(message: ChatMessage) {
     when (message) {
         is ChatMessage.User -> {
             MessageCard(
-                icon = Icons.Default.Person,
+                iconContent = {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(18.dp)
+                    )
+                },
                 label = "ユーザー",
                 content = message.content,
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -240,7 +246,14 @@ fun ChatMessageItem(message: ChatMessage) {
 
         is ChatMessage.Assistant -> {
             MessageCard(
-                icon = Icons.Default.AccountCircle,
+                iconContent = {
+                    Icon(
+                        imageVector = Icons.Default.AccountCircle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.size(18.dp)
+                    )
+                },
                 label = "アシスタント",
                 content = message.content,
                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -251,7 +264,14 @@ fun ChatMessageItem(message: ChatMessage) {
 
         is ChatMessage.AskToolCall -> {
             MessageCard(
-                icon = Icons.Default.Info,
+                iconContent = {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_smart_toy),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(18.dp)
+                    )
+                },
                 label = "アシスタント（AskTool）",
                 content = message.content,
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
@@ -262,9 +282,16 @@ fun ChatMessageItem(message: ChatMessage) {
 
         is ChatMessage.ToolCall -> {
             MessageCard(
-                icon = Icons.Default.Build,
+                iconContent = {
+                    Icon(
+                        imageVector = Icons.Default.Build,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                        modifier = Modifier.size(18.dp)
+                    )
+                },
                 label = "ツール: ${message.toolName}",
-                content = message.content,
+                content = null,
                 containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                 contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                 alignEnd = false,
