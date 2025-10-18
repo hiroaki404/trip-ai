@@ -1,17 +1,22 @@
 package org.example.trip_ai
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
@@ -26,10 +31,10 @@ import org.example.agent.TripPlan
 import org.example.storage.LineStorage
 import org.example.tokyoToKamakura
 import org.example.trip_ai.theme.TripAITheme
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
-import org.jetbrains.compose.resources.painterResource
 import trip_ai.composeapp.generated.resources.Res
 import trip_ai.composeapp.generated.resources.ic_smart_toy
 
@@ -379,88 +384,99 @@ fun StepCard(step: TripPlan.Step) {
 }
 
 @Composable
-fun ActivityItem(activity: TripPlan.Step.ScheduleEntry.Activity) {
+private fun ScheduleEntryItem(
+    icon: String,
+    duration: String,
+    title: String,
+    description: String,
+    containerColor: Color,
+    contentColor: Color,
+    mapContent: @Composable () -> Unit,
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+            containerColor = containerColor
         )
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            TripMap(
-                ActivityPoint(Coordinate(activity.longitude, activity.latitude)),
-                modifier = Modifier.height(150.dp).clip(RoundedCornerShape(8.dp))
-            )
-            Row(modifier = Modifier.padding(top = 8.dp)) {
+        Row(modifier = Modifier.padding(12.dp)) {
+            mapContent()
+            Column(modifier = Modifier.weight(1f).padding(start = 12.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "$icon ",
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                    Surface(
+                        color = contentColor.copy(alpha = 0.12f),
+                        shape = RoundedCornerShape(4.dp),
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = contentColor.copy(alpha = 0.24f)
+                        ),
+                        modifier = Modifier.padding(end = 8.dp)
+                    ) {
+                        Text(
+                            text = duration,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = contentColor,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                        )
+                    }
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = contentColor,
+                    )
+                }
                 Text(
-                    text = "📍 ",
-                    style = MaterialTheme.typography.labelMedium
-                )
-                Text(
-                    text = "${activity.duration} - ",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                Text(
-                    text = activity.location,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    text = description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = contentColor,
+                    modifier = Modifier.padding(start = 8.dp, top = 4.dp)
                 )
             }
-            Text(
-                text = activity.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.padding(start = 8.dp, top = 4.dp)
-            )
         }
     }
 }
 
 @Composable
+fun ActivityItem(activity: TripPlan.Step.ScheduleEntry.Activity) {
+    ScheduleEntryItem(
+        mapContent = {
+            TripMap(
+                ActivityPoint(Coordinate(activity.longitude, activity.latitude)),
+                modifier = Modifier.size(150.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            )
+        },
+        icon = "📍",
+        duration = activity.duration,
+        title = activity.location,
+        description = activity.description,
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+    )
+}
+
+@Composable
 fun TransportationItem(transportation: TripPlan.Step.ScheduleEntry.Transportation) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer
-        )
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            val line = LineStorage.getLine(transportation.lineId)?.toCoordinate().orEmpty()
+    val line = LineStorage.getLine(transportation.lineId)?.toCoordinate().orEmpty()
+    ScheduleEntryItem(
+        mapContent = {
             TripMap(
                 TransportationLine(line),
-                modifier = Modifier.height(150.dp).clip(RoundedCornerShape(8.dp))
+                modifier = Modifier.size(150.dp)
+                    .clip(RoundedCornerShape(8.dp))
             )
-            Row(modifier = Modifier.padding(top = 8.dp)) {
-                Text(
-                    text = "🚃 ",
-                    style = MaterialTheme.typography.labelMedium
-                )
-                Text(
-                    text = "${transportation.duration} - ",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-                Text(
-                    text = "${transportation.from} → ${transportation.to}",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-            }
-            Row(modifier = Modifier.padding(start = 8.dp, top = 4.dp)) {
-                Text(
-                    text = "[${transportation.type}] ",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-                Text(
-                    text = transportation.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-            }
-        }
-    }
+        },
+        icon = "🚃",
+        duration = transportation.duration,
+        title = "${transportation.from} → ${transportation.to}",
+        description = "[${transportation.type}] ${transportation.description}",
+        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+    )
 }
 
 data class ChatInputState(
