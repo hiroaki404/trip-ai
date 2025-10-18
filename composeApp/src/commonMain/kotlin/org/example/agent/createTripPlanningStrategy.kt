@@ -9,6 +9,7 @@ import ai.koog.prompt.executor.clients.google.GoogleModels
 import ai.koog.prompt.structure.StructureFixingParser
 import org.example.prompt.*
 import org.example.tools.AskUserInUI
+import org.example.tools.CalendarTool
 import org.example.tools.DirectionsTool
 import org.example.tools.WebSearchTools
 
@@ -16,7 +17,9 @@ fun createTripPlanningStrategy(
     askTool: AskUserInUI,
     webSearchTools: WebSearchTools,
     directionsTool: DirectionsTool,
+    calendarTool: CalendarTool,
 ) = strategy<String, TripPlan>("trip-planning") {
+    var planMemory: String = ""
 
     val nodeBeforeClarifyUserRequest by node<String, String> { userInput ->
         llm.writeSession {
@@ -48,6 +51,20 @@ fun createTripPlanningStrategy(
         planTripPrompt(requestInfo)
     }
 
+    val savePlan by node<String, String> { plan ->
+        plan.also { planMemory = it }
+    }
+
+    val createCalendar by subgraphWithTask<String, String>(
+        tools = listOf(calendarTool),
+    ) { plan ->
+        createCalendarPrompt(plan)
+    }
+
+    val restorePlan by node<String, String> { _ ->
+        planMemory
+    }
+
     val nodeStructuredOutput by nodeLLMRequestStructured<TripPlan>(
         "tripPlanStructured",
         examples = listOf(tripPlanExample),
@@ -57,7 +74,8 @@ fun createTripPlanningStrategy(
         )
     )
 
-    nodeStart then nodeBeforeClarifyUserRequest then clarifyUserRequest then nodeBeforePlanTrip then planTrip then nodeStructuredOutput
+    nodeStart then nodeBeforeClarifyUserRequest then clarifyUserRequest then nodeBeforePlanTrip then planTrip then
+            savePlan then createCalendar then restorePlan then nodeStructuredOutput
     edge(
         nodeStructuredOutput forwardTo nodeFinish
                 transformed { it.getOrThrow().structure }

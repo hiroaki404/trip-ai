@@ -13,10 +13,7 @@ import ai.koog.prompt.executor.llms.all.simpleOllamaAIExecutor
 import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
 import ai.koog.prompt.executor.llms.all.simpleOpenRouterExecutor
 import ai.koog.prompt.message.Message
-import org.example.tools.AskUserInUI
-import org.example.tools.DirectionsTool
-import org.example.tools.WebSearchTools
-import org.example.tools.createMapMCP
+import org.example.tools.*
 import org.example.trip_ai.ChatMessage
 
 suspend fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage) -> Unit): AIAgent<String, TripPlan> {
@@ -39,11 +36,13 @@ suspend fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage)
     // not work in Android
     val mapTools = McpToolRegistryProvider.fromTransport(createMapMCP(mapboxAccessToken, npxCommandPath))
     val directionsTool = DirectionsTool(mapboxAccessToken)
+    val calendarTool = CalendarTool
 
     val toolRegistry = ToolRegistry {
         tool(askUser)
         tools(webSearchTools.asTools())
         tool(directionsTool)
+        tool(calendarTool)
     }
 
     return AIAgent<String, TripPlan>(
@@ -58,7 +57,7 @@ suspend fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage)
         あまり細かく聞きすぎず、ある程度分かったところで計画を立ててください
         """.trimIndent(),
         toolRegistry = toolRegistry,
-        strategy = createTripPlanningStrategy(askUser, webSearchTools, directionsTool),
+        strategy = createTripPlanningStrategy(askUser, webSearchTools, directionsTool, calendarTool),
         maxIterations = 100
     ) {
         install(OpenTelemetry) {
