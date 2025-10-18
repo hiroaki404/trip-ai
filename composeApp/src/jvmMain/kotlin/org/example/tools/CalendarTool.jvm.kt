@@ -64,21 +64,31 @@ class JvmGoogleCalendarService : GoogleCalendarService {
             .build()
     }
 
-    override suspend fun createEvent(eventName: String, dateTime: LocalDateTime): String {
+    override suspend fun createEvent(
+        eventName: String,
+        startDateTime: LocalDateTime,
+        endDateTime: LocalDateTime
+    ): String {
         return try {
             val service = getCalendarService()
 
-            // Convert LocalDateTime to RFC3339 format
-            val instant = dateTime.toInstant(TimeZone.currentSystemDefault())
-            val eventDateTime = EventDateTime()
-                .setDateTime(com.google.api.client.util.DateTime(instant.toEpochMilliseconds()))
+            // Convert start LocalDateTime to RFC3339 format
+            val startInstant = startDateTime.toInstant(TimeZone.currentSystemDefault())
+            val startEventDateTime = EventDateTime()
+                .setDateTime(com.google.api.client.util.DateTime(startInstant.toEpochMilliseconds()))
+                .setTimeZone(TimeZone.currentSystemDefault().id)
+
+            // Convert end LocalDateTime to RFC3339 format
+            val endInstant = endDateTime.toInstant(TimeZone.currentSystemDefault())
+            val endEventDateTime = EventDateTime()
+                .setDateTime(com.google.api.client.util.DateTime(endInstant.toEpochMilliseconds()))
                 .setTimeZone(TimeZone.currentSystemDefault().id)
 
             // Create the event
             val event = Event()
                 .setSummary(eventName)
-                .setStart(eventDateTime)
-                .setEnd(eventDateTime) // Using same time for start and end (instant event)
+                .setStart(startEventDateTime)
+                .setEnd(endEventDateTime)
 
             val calendarId = "primary"
             val createdEvent = service.events().insert(calendarId, event).execute()
