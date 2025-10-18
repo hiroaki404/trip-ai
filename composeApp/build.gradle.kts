@@ -52,6 +52,9 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.mapbox.services)
+            implementation(libs.google.api.client)
+            implementation(libs.google.oauth.client.jetty)
+            implementation(libs.google.calendar.api)
         }
     }
 }

@@ -21,6 +21,9 @@ mapbox = "11.15.2"
 mapbox-services = "7.8.0"
 coil = "3.3.0"
 material-icons = "1.7.3"
+google-api-client = "2.0.0"
+google-oauth-client = "1.39.0"
+google-calendar-api = "v3-rev20250404-2.0.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -43,6 +46,9 @@ mapbox-services = { module = "com.mapbox.mapboxsdk:mapbox-sdk-services", version
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 material-icons = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "material-icons" }
+google-api-client = { module = "com.google.api-client:google-api-client", version.ref = "google-api-client" }
+google-oauth-client-jetty = { module = "com.google.oauth-client:google-oauth-client-jetty", version.ref = "google-oauth-client" }
+google-calendar-api = { module = "com.google.apis:google-api-services-calendar", version.ref = "google-calendar-api" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

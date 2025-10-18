@@ -21,3 +21,7 @@ node_modules/
 *.db
 .claude/
 developer-config.xml
+
+# Google Calendar API credentials
+**/credentials.json
+tokens/
