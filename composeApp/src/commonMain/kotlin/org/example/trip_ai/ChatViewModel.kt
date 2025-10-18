@@ -62,7 +62,7 @@ class ChatViewModel : ViewModel() {
                             is ChatMessage.AskToolCall -> {
                                 _uiState.update {
                                     it.copy(
-                                        userInput = message.content,
+                                        chatMessage = it.chatMessage + message,
                                         isLoading = false
                                     )
                                 }
