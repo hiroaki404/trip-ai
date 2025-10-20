@@ -1,5 +1,7 @@
 package org.example.prompt
 
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.example.agent.TripPlan
 import org.example.agent.TripPlan.Step
 
@@ -73,6 +75,7 @@ val systemPlanTripPrompt = """
 - 季節や時期に合った提案を行う
 - 実現可能性を重視し、無理のないスケジュールを組む
 - ユーザーの目的・テーマに沿った内容にする
+- **旅行日程は必ず2025年10月以降の日付で計画を立てる**
 
 【ツールの活用方針】
 
@@ -199,6 +202,7 @@ $requestInfo
 ...
 
 【注意事項】
+- **旅行日程は必ず2025年10月以降の日付で計画を立てる（例: 2025-10-15、2025-11-20など）**
 - **合計tool呼び出し回数は5-10回程度を目安とする**
 - 重要なところのみ検索し、一般知識で対応（0-2回程度）
 - 未確認の情報については、一般的なケースを想定して一つのプランを提案
@@ -401,44 +405,45 @@ val tripPlanExample = TripPlan(
     )
 )
 
-fun createCalendarPrompt(plan: TripPlan) = """
-以下の旅行計画をGoogleカレンダーに登録する準備ができました。
-まず、ユーザーに計画内容を確認してもらい、フィードバックを受け取ってください。
-
-【旅行計画】
-サマリー: ${plan.summary}
-
-日程:
-${
-    plan.step.joinToString("\n\n") { step ->
-        """
-    日付: ${step.date}
-    スケジュール:
-    ${
-            step.scheduleEntries.joinToString("\n    ") { entry ->
-                when (entry) {
-                    is Step.ScheduleEntry.Activity ->
-                        "- ${entry.duration}: ${entry.description} (場所: ${entry.location})"
-
-                    is Step.ScheduleEntry.Transportation ->
-                        "- ${entry.duration}: ${entry.description} (${entry.from} → ${entry.to})"
-                }
-            }
-        }
-    """.trimIndent()
+fun createCalendarPrompt(plan: TripPlan): String {
+    val json = Json {
+        classDiscriminator = "__type"
     }
-}
+    val planJson = json.encodeToString(plan)
+    return """
+旅行計画の作成が完了しました。
+次のステップとして、ユーザーにフィードバックを求めてから、Googleカレンダーに登録します。
 
-【最初のステップ】
-__feedback_user__ツールを使用して、ユーザーに以下の内容を確認してください：
-- 上記の旅行計画の内容で問題ないか
-- 修正や変更したい点がないか
-- カレンダーに登録してよいか
+【旅行計画データ（JSON形式）】
+以下のJSON形式の旅行計画データを__feedback_user__ツールに渡してください：
 
-【フィードバック後の登録方法】
-ユーザーから承認を得たら、calendar_toolを使用して、この旅行全体を1つのカレンダーイベントとして登録してください。
+```json
+$planJson
+```
 
-パラメータの設定:
+【最初のステップ - 必須】
+**__feedback_user__ツールを使用して、上記の旅行計画をユーザーに提示し、フィードバックを受け取ってください。**
+
+__feedback_user__ツールの呼び出し方：
+- planパラメータには、上記のJSON形式の旅行計画データをTripPlanオブジェクトとしてパースして渡してください
+- 重要: JSONのクラス判別子は "__type" です（デフォルトの "type" ではありません）
+- このツールはUIに旅行計画を表示し、ユーザーからのフィードバックを収集します
+- ユーザーに確認する内容：
+  * 旅行計画の内容で問題ないか
+  * 修正や変更したい点がないか
+  * カレンダーに登録してよいか
+
+【フィードバック後の対応】
+ユーザーのフィードバックに応じて以下のように対応してください：
+
+1. **修正が必要な場合**
+   - ユーザーの要望に応じて旅行計画を修正
+   - 再度__feedback_user__ツールで確認を取る
+
+2. **承認を得た場合**
+   - calendar_toolを使用して、旅行全体を1つのカレンダーイベントとして登録
+
+【calendar_toolのパラメータ設定】
 - eventName: 旅行先と目的を簡潔に表すタイトルを作成
   例: "札幌旅行 - シマエナガ観察"、"東京2泊3日の旅"
 - startDate: 旅行の開始日時
@@ -450,8 +455,11 @@ __feedback_user__ツールを使用して、ユーザーに以下の内容を確
 
 【注意事項】
 - **カレンダー登録の前に必ず__feedback_user__ツールでユーザーの確認を取ってください**
+- **__feedback_user__ツールには上記のJSON形式のTripPlanデータを正確にパースして渡してください**
+- すべてのフィールド（summary, step, scheduleEntries, duration, description, location, longitude, latitude, type, from, to, lineIdなど）が含まれていることを確認してください
 - ユーザーから修正の要望があった場合は、計画を修正してから再度確認を取ってください
 - イベントは1つだけ作成してください（旅行全体を1つのイベントとして扱います）
 - startDateとendDateは必ずLocalDateTime形式で正確に指定してください
 - 登録が完了したら、作成されたイベントのリンクをユーザーに報告してください
 """
+}
