@@ -401,25 +401,56 @@ val tripPlanExample = TripPlan(
     )
 )
 
-fun createCalendarPrompt(plan: String) = """
-以下の旅行計画をGoogleカレンダーに登録してください。
+fun createCalendarPrompt(plan: TripPlan) = """
+以下の旅行計画をGoogleカレンダーに登録する準備ができました。
+まず、ユーザーに計画内容を確認してもらい、フィードバックを受け取ってください。
 
 【旅行計画】
-$plan
+サマリー: ${plan.summary}
 
-【登録方法】
-calendar_toolを使用して、この旅行全体を1つのカレンダーイベントとして登録してください。
+日程:
+${
+    plan.step.joinToString("\n\n") { step ->
+        """
+    日付: ${step.date}
+    スケジュール:
+    ${
+            step.scheduleEntries.joinToString("\n    ") { entry ->
+                when (entry) {
+                    is Step.ScheduleEntry.Activity ->
+                        "- ${entry.duration}: ${entry.description} (場所: ${entry.location})"
+
+                    is Step.ScheduleEntry.Transportation ->
+                        "- ${entry.duration}: ${entry.description} (${entry.from} → ${entry.to})"
+                }
+            }
+        }
+    """.trimIndent()
+    }
+}
+
+【最初のステップ】
+__feedback_user__ツールを使用して、ユーザーに以下の内容を確認してください：
+- 上記の旅行計画の内容で問題ないか
+- 修正や変更したい点がないか
+- カレンダーに登録してよいか
+
+【フィードバック後の登録方法】
+ユーザーから承認を得たら、calendar_toolを使用して、この旅行全体を1つのカレンダーイベントとして登録してください。
 
 パラメータの設定:
 - eventName: 旅行先と目的を簡潔に表すタイトルを作成
   例: "札幌旅行 - シマエナガ観察"、"東京2泊3日の旅"
 - startDate: 旅行の開始日時
-  ※旅行計画から最初のStepの日時（"YYYY-MM-DD HH:MM"形式）を読み取り、LocalDateTime形式で指定
+  ※最初のStepの日時 "${plan.step.firstOrNull()?.date ?: ""}" から開始時刻を読み取り、LocalDateTime形式で指定
+  ※最初のActivityの開始時刻を使用してください
 - endDate: 旅行の終了日時
-  ※旅行計画から最後のStepの最終Activity終了時刻を読み取り、LocalDateTime形式で指定
-  ※最後のStepから終了時刻を推定してください（例: 最後のActivityが14:00-15:00なら15:00を使用）
+  ※最後のStepの最終Activity/Transportation終了時刻を読み取り、LocalDateTime形式で指定
+  ※最後のScheduleEntryのdurationから終了時刻を推定してください（例: "14:00-15:00"なら15:00を使用）
 
 【注意事項】
+- **カレンダー登録の前に必ず__feedback_user__ツールでユーザーの確認を取ってください**
+- ユーザーから修正の要望があった場合は、計画を修正してから再度確認を取ってください
 - イベントは1つだけ作成してください（旅行全体を1つのイベントとして扱います）
 - startDateとendDateは必ずLocalDateTime形式で正確に指定してください
 - 登録が完了したら、作成されたイベントのリンクをユーザーに報告してください

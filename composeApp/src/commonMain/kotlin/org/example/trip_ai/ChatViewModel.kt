@@ -10,11 +10,13 @@ import kotlinx.coroutines.launch
 import org.example.agent.TripPlan
 import org.example.agent.createTripAgent
 import org.example.tools.AskUserInUI
+import org.example.tools.FeedbackUserInUI
 
 sealed interface ChatMessage {
     data class User(val content: String) : ChatMessage
     data class Assistant(val content: String) : ChatMessage
     data class AskToolCall(val content: String) : ChatMessage
+    data class FeedbackToolCall(val plan: TripPlan) : ChatMessage
     data class ToolCall(val toolName: String, val content: String) : ChatMessage
     data class Structured(val content: TripPlan) : ChatMessage
 }
@@ -30,6 +32,7 @@ class ChatViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
     val askUser = AskUserInUI
+    val feedbackTool = FeedbackUserInUI
 
     fun updateUserInput(input: String) {
         _uiState.update { it.copy(userInput = input) }
@@ -57,9 +60,18 @@ class ChatViewModel : ViewModel() {
                     )
                 }
                 try {
-                    val agent = createTripAgent(askUser) { message ->
+                    val agent = createTripAgent(askUser, feedbackTool) { message ->
                         when (message) {
                             is ChatMessage.AskToolCall -> {
+                                _uiState.update {
+                                    it.copy(
+                                        chatMessage = it.chatMessage + message,
+                                        isLoading = false
+                                    )
+                                }
+                            }
+
+                            is ChatMessage.FeedbackToolCall -> {
                                 _uiState.update {
                                     it.copy(
                                         chatMessage = it.chatMessage + message,

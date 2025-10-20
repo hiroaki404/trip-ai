@@ -285,6 +285,30 @@ fun ChatMessageItem(message: ChatMessage) {
             )
         }
 
+        is ChatMessage.FeedbackToolCall -> {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                TripPlanCard(tripPlan = message.plan)
+                MessageCard(
+                    iconContent = {
+                        Icon(
+                            painter = painterResource(Res.drawable.ic_smart_toy),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    label = "アシスタント（FeedbackTool）",
+                    content = "上記の旅行プランについて、フィードバックをお願いします。変更したい点や追加したい内容があれば教えてください。",
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    alignEnd = false
+                )
+            }
+        }
+
         is ChatMessage.ToolCall -> {
             MessageCard(
                 iconContent = {
@@ -598,6 +622,8 @@ fun AppContentPreview() {
                 toolName = "directions",
                 content = "directions is Called"
             ),
+            ChatMessage.FeedbackToolCall(plan = samplePlan),
+            ChatMessage.User("もう少し早く出発したいです"),
             ChatMessage.Structured(samplePlan)
         )
     )

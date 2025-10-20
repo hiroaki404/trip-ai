@@ -16,7 +16,11 @@ import ai.koog.prompt.message.Message
 import org.example.tools.*
 import org.example.trip_ai.ChatMessage
 
-suspend fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage) -> Unit): AIAgent<String, TripPlan> {
+suspend fun createTripAgent(
+    askUser: AskUserInUI,
+    feedbackTool: FeedbackUserInUI,
+    onMessageUpdate: (ChatMessage) -> Unit
+): AIAgent<String, TripPlan> {
     // not work in Android
     val openAIApiKey = System.getenv("OPENAI_API_KEY")
     val geminiApiKey = System.getenv("GEMINI_API_KEY")
@@ -40,6 +44,7 @@ suspend fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage)
 
     val toolRegistry = ToolRegistry {
         tool(askUser)
+        tool(feedbackTool)
         tools(webSearchTools.asTools())
         tool(directionsTool)
         tool(calendarTool)
@@ -57,7 +62,7 @@ suspend fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage)
         あまり細かく聞きすぎず、ある程度分かったところで計画を立ててください
         """.trimIndent(),
         toolRegistry = toolRegistry,
-        strategy = createTripPlanningStrategy(askUser, webSearchTools, directionsTool, calendarTool),
+        strategy = createTripPlanningStrategy(askUser, feedbackTool, webSearchTools, directionsTool, calendarTool),
         maxIterations = 100
     ) {
         install(OpenTelemetry) {
@@ -71,6 +76,14 @@ suspend fun createTripAgent(askUser: AskUserInUI, onMessageUpdate: (ChatMessage)
                         onMessageUpdate(
                             ChatMessage.AskToolCall(
                                 (it.toolArgs as AskUserInUI.Args).message
+                            )
+                        )
+                    }
+
+                    is FeedbackUserInUI -> {
+                        onMessageUpdate(
+                            ChatMessage.FeedbackToolCall(
+                                (it.toolArgs as FeedbackUserInUI.Args).plan
                             )
                         )
                     }
