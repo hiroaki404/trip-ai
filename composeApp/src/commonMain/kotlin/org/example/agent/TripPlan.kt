@@ -21,9 +21,9 @@ data class TripPlan(
         val scheduleEntries: List<ScheduleEntry>,
     ) {
         @Serializable
-        sealed interface ScheduleEntry {
-            val duration: String
-            val description: String
+        sealed class ScheduleEntry {
+            abstract val duration: String
+            abstract val description: String
 
             @Serializable
             @LLMDescription("A specific activity within a step")
@@ -38,7 +38,7 @@ data class TripPlan(
                 val longitude: Double,
                 @property:LLMDescription("Latitude of the location")
                 val latitude: Double,
-            ) : ScheduleEntry
+            ) : ScheduleEntry()
 
             @Serializable
             @LLMDescription("Transportation between locations")
@@ -55,7 +55,7 @@ data class TripPlan(
                 override val duration: String,
                 @property:LLMDescription("Detailed description of the transportation")
                 override val description: String
-            ) : ScheduleEntry
+            ) : ScheduleEntry()
         }
     }
 }
