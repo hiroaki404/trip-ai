@@ -41,7 +41,15 @@ class ChatViewModel : ViewModel() {
     fun sendMessage() {
         viewModelScope.launch {
             if (_uiState.value.isAgentActive) {
-                askUser.setUserInput(_uiState.value.userInput)
+                val userInput = _uiState.value.userInput
+
+                // 最後のメッセージを確認して適切なツールにフィードバックを送る
+                when (_uiState.value.chatMessage.lastOrNull()) {
+                    is ChatMessage.FeedbackToolCall -> feedbackTool.setUserFeedback(userInput)
+                    is ChatMessage.AskToolCall -> askUser.setUserInput(userInput)
+                    else -> askUser.setUserInput(userInput) // デフォルトはaskUser
+                }
+
                 _uiState.update {
                     it.copy(
                         userInput = "",

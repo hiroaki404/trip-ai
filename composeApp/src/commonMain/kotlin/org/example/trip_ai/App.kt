@@ -104,8 +104,14 @@ fun ChatMessageList(
     isLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val scrollState = rememberScrollState()
+
+    LaunchedEffect(messages.size, isLoading) {
+        scrollState.animateScrollTo(scrollState.maxValue)
+    }
+
     Column(
-        modifier = modifier.verticalScroll(rememberScrollState())
+        modifier = modifier.verticalScroll(scrollState)
     ) {
         if (messages.isNotEmpty()) {
             messages.forEach { message ->
