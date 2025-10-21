@@ -22,9 +22,9 @@ data class TripPlan(
         val scheduleEntries: List<ScheduleEntry>,
     ) {
         @Serializable
-        sealed class ScheduleEntry {
-            abstract val duration: String
-            abstract val description: String
+        sealed interface ScheduleEntry {
+            val duration: String
+            val description: String
 
             @Serializable
             @SerialName("activity")
@@ -40,7 +40,7 @@ data class TripPlan(
                 val longitude: Double,
                 @property:LLMDescription("Latitude of the location")
                 val latitude: Double,
-            ) : ScheduleEntry()
+            ) : ScheduleEntry
 
             @Serializable
             @SerialName("transportation")
@@ -58,7 +58,7 @@ data class TripPlan(
                 override val duration: String,
                 @property:LLMDescription("Detailed description of the transportation")
                 override val description: String
-            ) : ScheduleEntry()
+            ) : ScheduleEntry
         }
     }
 }

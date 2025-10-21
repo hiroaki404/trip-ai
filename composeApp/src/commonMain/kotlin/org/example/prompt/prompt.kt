@@ -1,6 +1,5 @@
 package org.example.prompt
 
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.example.agent.TripPlan
 import org.example.agent.TripPlan.Step
@@ -425,7 +424,7 @@ $planJson
 **__feedback_user__ツールを使用して、上記の旅行計画をユーザーに提示し、フィードバックを受け取ってください。**
 
 __feedback_user__ツールの呼び出し方：
-- planパラメータには、上記のJSON形式の旅行計画データをTripPlanオブジェクトとしてパースして渡してください
+- planパラメータには、上記のJSON形式の旅行計画データをそのまま渡してください。
 - このツールはUIに旅行計画を表示し、ユーザーからのフィードバックを収集します
 - ユーザーに確認する内容：
   * 旅行計画の内容で問題ないか
@@ -454,7 +453,7 @@ __feedback_user__ツールの呼び出し方：
 
 【注意事項】
 - **カレンダー登録の前に必ず__feedback_user__ツールでユーザーの確認を取ってください**
-- **__feedback_user__ツールには上記のJSON形式のTripPlanデータを正確にパースして渡してください**
+- **__feedback_user__ツールには上記のJSON文字列をそのまま渡してください**
 - すべてのフィールド（summary, step, scheduleEntries, duration, description, location, longitude, latitude, type, from, to, lineIdなど）が含まれていることを確認してください
 - ユーザーから修正の要望があった場合は、計画を修正してから再度確認を取ってください
 - イベントは1つだけ作成してください（旅行全体を1つのイベントとして扱います）
