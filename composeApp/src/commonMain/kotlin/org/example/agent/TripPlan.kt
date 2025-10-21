@@ -1,6 +1,7 @@
 package org.example.agent
 
 import ai.koog.agents.core.tools.annotations.LLMDescription
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.example.trip_ai.Coordinate
 
@@ -26,6 +27,7 @@ data class TripPlan(
             abstract val description: String
 
             @Serializable
+            @SerialName("activity")
             @LLMDescription("A specific activity within a step")
             data class Activity(
                 @property:LLMDescription("Duration or time range for this activity")
@@ -41,10 +43,11 @@ data class TripPlan(
             ) : ScheduleEntry()
 
             @Serializable
+            @SerialName("transportation")
             @LLMDescription("Transportation between locations")
             data class Transportation(
                 @property:LLMDescription("Type of transportation (e.g., train, bus, taxi, walking)")
-                val type: String,
+                val transportationType: String,
                 @property:LLMDescription("Departure location")
                 val from: String,
                 @property:LLMDescription("Destination location")

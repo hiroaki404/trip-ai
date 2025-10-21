@@ -503,7 +503,7 @@ fun TransportationItem(transportation: TripPlan.Step.ScheduleEntry.Transportatio
         icon = "🚃",
         duration = transportation.duration,
         title = "${transportation.from} → ${transportation.to}",
-        description = "[${transportation.type}] ${transportation.description}",
+        description = "[${transportation.transportationType}] ${transportation.description}",
         containerColor = MaterialTheme.colorScheme.tertiaryContainer,
         contentColor = MaterialTheme.colorScheme.onTertiaryContainer
     )
@@ -574,7 +574,7 @@ fun AppContentPreview() {
                         duration = "07:40-08:40",
                         from = "東京駅",
                         to = "鎌倉駅",
-                        type = "電車",
+                        transportationType = "電車",
                         description = "JR横須賀線快速（運賃片道約620円）。車窓から東京湾や横浜の景色を楽しめます。",
                         lineId = "1"
                     ),
@@ -589,7 +589,7 @@ fun AppContentPreview() {
                         duration = "09:30-09:35",
                         from = "鶴岡八幡宮",
                         to = "小町通り入口",
-                        type = "徒歩",
+                        transportationType = "徒歩",
                         description = "鎌倉駅方面へ下る小道を散策しながら移動。",
                         lineId = "2"
                     ),

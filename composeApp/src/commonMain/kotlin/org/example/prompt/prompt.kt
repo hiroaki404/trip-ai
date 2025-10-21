@@ -121,7 +121,7 @@ val systemPlanTripPrompt = """
      * latitude: 場所の緯度（主要なActivityのみForwardGeocodeToolで取得、その他は推定値）
 
      Transportationには以下を含める：
-     * type: 交通手段の種類（例: "電車"、"バス"、"タクシー"、"徒歩"）
+     * transportationType: 交通手段の種類（例: "電車"、"バス"、"タクシー"、"徒歩"）
      * from: 出発地（具体的な場所名）
      * to: 目的地（具体的な場所名）
      * lineId: 移動ルートを識別するID（String型）
@@ -183,7 +183,7 @@ $requestInfo
 - latitude: 場所の緯度（主要なActivityのみForwardGeocodeToolで取得、その他は推定値）
 
 ### Transportation
-- type: 交通手段の種類（"電車"、"バス"、"タクシー"、"徒歩"など）
+- transportationType: 交通手段の種類（"電車"、"バス"、"タクシー"、"徒歩"など）
 - from: 出発地の具体的な場所名
 - to: 目的地の具体的な場所名
 - lineId: 移動ルートを識別するID（String型）
@@ -230,7 +230,7 @@ val tripPlanExample = TripPlan(
                     latitude = 35.5494
                 ),
                 Step.ScheduleEntry.Transportation(
-                    type = "電車",
+                    transportationType = "電車",
                     from = "羽田空港",
                     to = "浅草駅",
                     lineId = "1",
@@ -252,7 +252,7 @@ val tripPlanExample = TripPlan(
                     latitude = 35.7115
                 ),
                 Step.ScheduleEntry.Transportation(
-                    type = "電車",
+                    transportationType = "電車",
                     from = "浅草駅",
                     to = "新宿駅",
                     lineId = "2",
@@ -293,7 +293,7 @@ val tripPlanExample = TripPlan(
                     latitude = 35.6938
                 ),
                 Step.ScheduleEntry.Transportation(
-                    type = "電車",
+                    transportationType = "電車",
                     from = "新宿駅",
                     to = "渋谷駅",
                     lineId = "3",
@@ -315,7 +315,7 @@ val tripPlanExample = TripPlan(
                     latitude = 35.6595
                 ),
                 Step.ScheduleEntry.Transportation(
-                    type = "電車",
+                    transportationType = "電車",
                     from = "渋谷駅",
                     to = "原宿駅",
                     lineId = "4",
@@ -337,7 +337,7 @@ val tripPlanExample = TripPlan(
                     latitude = 35.6705
                 ),
                 Step.ScheduleEntry.Transportation(
-                    type = "電車",
+                    transportationType = "電車",
                     from = "原宿駅",
                     to = "新宿駅",
                     lineId = "5",
@@ -364,7 +364,7 @@ val tripPlanExample = TripPlan(
                     latitude = 35.6938
                 ),
                 Step.ScheduleEntry.Transportation(
-                    type = "電車",
+                    transportationType = "電車",
                     from = "新宿駅",
                     to = "東京駅",
                     lineId = "6",
@@ -386,7 +386,7 @@ val tripPlanExample = TripPlan(
                     latitude = 35.6812
                 ),
                 Step.ScheduleEntry.Transportation(
-                    type = "電車",
+                    transportationType = "電車",
                     from = "東京駅",
                     to = "羽田空港",
                     lineId = "7",
@@ -407,7 +407,7 @@ val tripPlanExample = TripPlan(
 
 fun createCalendarPrompt(plan: TripPlan): String {
     val json = Json {
-        classDiscriminator = "__type"
+        prettyPrint = true
     }
     val planJson = json.encodeToString(plan)
     return """
@@ -426,7 +426,6 @@ $planJson
 
 __feedback_user__ツールの呼び出し方：
 - planパラメータには、上記のJSON形式の旅行計画データをTripPlanオブジェクトとしてパースして渡してください
-- 重要: JSONのクラス判別子は "__type" です（デフォルトの "type" ではありません）
 - このツールはUIに旅行計画を表示し、ユーザーからのフィードバックを収集します
 - ユーザーに確認する内容：
   * 旅行計画の内容で問題ないか
