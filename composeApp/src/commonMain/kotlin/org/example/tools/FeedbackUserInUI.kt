@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import org.example.agent.TripPlan
 
 object FeedbackUserInUI : SimpleTool<FeedbackUserInUI.Args>() {
     private val _userFeedback: MutableStateFlow<String> = MutableStateFlow("")
@@ -15,8 +14,8 @@ object FeedbackUserInUI : SimpleTool<FeedbackUserInUI.Args>() {
 
     @Serializable
     data class Args(
-        @property:LLMDescription("Trip plan to show to the user for feedback")
-        val plan: TripPlan
+        @property:LLMDescription("Summary of the trip plan to show to the user for feedback")
+        val summary: String
     )
 
     override val name: String = "__feedback_user__"
@@ -28,7 +27,7 @@ object FeedbackUserInUI : SimpleTool<FeedbackUserInUI.Args>() {
     }
 
     override suspend fun doExecute(args: Args): String {
-        println("Showing trip plan to user: ${args.plan}")
+        println("Showing trip plan summary to user: ${args.summary}")
         return userFeedback.first { it.isNotEmpty() }.also {
             _userFeedback.value = ""
         }

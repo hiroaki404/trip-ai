@@ -54,7 +54,7 @@ fun createTripPlanningStrategy(
         examples = listOf(tripPlanExample),
         fixingParser = StructureFixingParser(
             fixingModel = GoogleModels.Gemini2_0Flash,
-            retries = 2
+            retries = 3
         )
     )
 

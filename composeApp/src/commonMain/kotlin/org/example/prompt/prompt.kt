@@ -1,6 +1,5 @@
 package org.example.prompt
 
-import kotlinx.serialization.json.Json
 import org.example.agent.TripPlan
 import org.example.agent.TripPlan.Step
 
@@ -405,59 +404,51 @@ val tripPlanExample = TripPlan(
 )
 
 fun createCalendarPrompt(plan: TripPlan): String {
-    val json = Json {
-        prettyPrint = true
-    }
-    val planJson = json.encodeToString(plan)
     return """
 旅行計画の作成が完了しました。
 次のステップとして、ユーザーにフィードバックを求めてから、Googleカレンダーに登録します。
 
-【旅行計画データ（JSON形式）】
-以下のJSON形式の旅行計画データを__feedback_user__ツールに渡してください：
-
-```json
-$planJson
-```
-
 【最初のステップ - 必須】
-**__feedback_user__ツールを使用して、上記の旅行計画をユーザーに提示し、フィードバックを受け取ってください。**
+**__feedback_user__ツールを使用して、旅行計画の要約をユーザーに提示し、フィードバックを受け取ってください。**
 
 __feedback_user__ツールの呼び出し方：
-- planパラメータには、上記のJSON形式の旅行計画データをそのまま渡してください。
-- このツールはUIに旅行計画を表示し、ユーザーからのフィードバックを収集します
-- ユーザーに確認する内容：
-  * 旅行計画の内容で問題ないか
-  * 修正や変更したい点がないか
-  * カレンダーに登録してよいか
+- summaryパラメータには、旅行計画の要約（summary）を渡してください: "${plan.summary}"
+- このツールはUIに旅行計画の要約を表示し、ユーザーからのフィードバックを収集します
 
 【フィードバック後の対応】
 ユーザーのフィードバックに応じて以下のように対応してください：
 
-1. **修正が必要な場合**
-   - ユーザーの要望に応じて旅行計画を修正
-   - 再度__feedback_user__ツールで確認を取る
+1. **ユーザーが承認した場合（「OK」「いいです」「問題ありません」などの肯定的な回答）**
+   - **すぐにcalendar_toolを使用してカレンダー登録を実行してください**
+   - **calendar_toolを使用した後は、絶対に__feedback_user__ツールを再度使わないでください**
+   - 一度承諾が得られれば、計画の修正は不要です。
+   - カレンダー登録が完了したら、終了してください
 
-2. **承認を得た場合**
-   - calendar_toolを使用して、旅行全体を1つのカレンダーイベントとして登録
+2. **修正が必要な場合（具体的な変更要求がある場合）**
+   - ユーザーの要望に応じて旅行計画を修正
+   - 修正後、再度__feedback_user__ツールで確認を取る
+   - 承認を得たら、上記1の手順に従ってカレンダー登録を実行
 
 【calendar_toolのパラメータ設定】
 - eventName: 旅行先と目的を簡潔に表すタイトルを作成
   例: "札幌旅行 - シマエナガ観察"、"東京2泊3日の旅"
-- startDate: 旅行の開始日時
-  ※最初のStepの日時 "${plan.step.firstOrNull()?.date ?: ""}" から開始時刻を読み取り、LocalDateTime形式で指定
-  ※最初のActivityの開始時刻を使用してください
-- endDate: 旅行の終了日時
-  ※最後のStepの最終Activity/Transportation終了時刻を読み取り、LocalDateTime形式で指定
-  ※最後のScheduleEntryのdurationから終了時刻を推定してください（例: "14:00-15:00"なら15:00を使用）
+- startDate: 旅行の開始日時（ISO 8601形式: YYYY-MM-DDTHH:MM）
+  ※最初のStepの日時 "${plan.step.firstOrNull()?.date ?: ""}" から開始時刻を読み取る
+  ※必ず "T" で日付と時刻を区切ってください（例: "2025-10-15T09:00"）
+  ※スペース区切りではなく、必ず "T" を使用してください
+- endDate: 旅行の終了日時（ISO 8601形式: YYYY-MM-DDTHH:MM）
+  ※最後のStepの最終Activity/Transportation終了時刻を読み取る
+  ※最後のScheduleEntryのdurationから終了時刻を推定（例: "14:00-15:00"なら15:00）
+  ※必ず "T" で日付と時刻を区切ってください（例: "2025-10-15T15:00"）
 
 【注意事項】
-- **カレンダー登録の前に必ず__feedback_user__ツールでユーザーの確認を取ってください**
-- **__feedback_user__ツールには上記のJSON文字列をそのまま渡してください**
-- すべてのフィールド（summary, step, scheduleEntries, duration, description, location, longitude, latitude, type, from, to, lineIdなど）が含まれていることを確認してください
-- ユーザーから修正の要望があった場合は、計画を修正してから再度確認を取ってください
-- イベントは1つだけ作成してください（旅行全体を1つのイベントとして扱います）
-- startDateとendDateは必ずLocalDateTime形式で正確に指定してください
-- 登録が完了したら、作成されたイベントのリンクをユーザーに報告してください
+- **__feedback_user__ツールは最初に1回だけ使用してください**
+- **ユーザーが承認したら、再度__feedback_user__ツールを使わずに即座にカレンダー登録に進んでください**
+- **__feedback_user__ツールのsummaryパラメータには旅行計画の要約(summary)を渡してください**
+- ユーザーから修正の要望があった場合のみ、計画を修正してから再度確認を取ってください
+- **calendar_toolは必ず1回だけ使用してください（旅行全体を1つのイベントとして扱います）**
+- **calendar_toolを呼び出したら、その結果を待って、処理を終了する**
+- **startDateとendDateは必ずISO 8601形式（YYYY-MM-DDTHH:MM）で指定してください**
+- **日付と時刻の区切りには必ず "T" を使用し、スペースは使わないでください**
 """
 }

@@ -83,7 +83,7 @@ suspend fun createTripAgent(
                     is FeedbackUserInUI -> {
                         onMessageUpdate(
                             ChatMessage.FeedbackToolCall(
-                                (it.toolArgs as FeedbackUserInUI.Args).plan
+                                (it.toolArgs as FeedbackUserInUI.Args).summary
                             )
                         )
                     }

@@ -20,9 +20,9 @@ object CalendarTool : SimpleTool<CalendarTool.Args>() {
     data class Args(
         @property:LLMDescription("The name or title of the calendar event")
         val eventName: String,
-        @property:LLMDescription("The start date and time of the event")
+        @property:LLMDescription("The start date and time of the event in ISO 8601 format (YYYY-MM-DDTHH:MM). Example: 2025-10-15T09:00. Use 'T' to separate date and time, NOT a space.")
         val startDate: LocalDateTime,
-        @property:LLMDescription("The end date and time of the event")
+        @property:LLMDescription("The end date and time of the event in ISO 8601 format (YYYY-MM-DDTHH:MM). Example: 2025-10-15T18:00. Use 'T' to separate date and time, NOT a space.")
         val endDate: LocalDateTime,
     )
 
