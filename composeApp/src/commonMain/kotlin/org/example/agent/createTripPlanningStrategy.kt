@@ -47,13 +47,13 @@ fun createTripPlanningStrategy(
         plan.also { planMemory = it }
     }
 
-    val evaluation by subgraphWithTask<TripPlan, TripPlan>(
+    val evaluation by subgraphWithTask<TripPlan, String?>(
         tools = listOf(calendarTool, feedbackTool),
     ) { plan ->
         createCalendarPrompt(plan)
     }
 
-    val restorePlan by node<TripPlan, TripPlan> { _ ->
+    val restorePlan by node<String?, TripPlan> { _ ->
         planMemory!! // FIXME: error handling when null
     }
 
@@ -62,5 +62,14 @@ fun createTripPlanningStrategy(
         nodeStructuredOutput forwardTo savePlan
                 transformed { it.getOrThrow().structure }
     )
-    savePlan then evaluation then restorePlan then nodeFinish
+    savePlan then evaluation
+    edge(
+        evaluation forwardTo restorePlan
+                onCondition { it == null || it.contains("null") })
+    edge(
+        evaluation forwardTo planTrip
+                onCondition { it != null }
+                transformed { it!! }
+    )
+    restorePlan then nodeFinish
 }

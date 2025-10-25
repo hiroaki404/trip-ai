@@ -69,14 +69,14 @@ suspend fun createTripAgent(
         そして旅行計画を作成後、ユーザーにフィードバッグを求めます。
         __feedback_user__ツールを使ってユーザーに提示します。このとき承諾が得られれば、
         もはや_feedback_user__ツールを使わないで、計画を確定させます。
-        ユーザーが拒否した場合また計画を直し、__feedback__user__で提示します。
-        旅行計画が確定されたらcalendar_toolを使ってカレンダーに登録します。
-        このツールは1回しか使ってはいけません。
+        承諾した場合nullを出力してこのフェーズを終わります。
+        ユーザーが拒否した場合また計画を直し、一旦追加の要望を出力して処理を終了して前のフェーズに戻ります。
+        旅行計画が確定されたらcalendar_toolを使ってカレンダーに登録します。calendar_toolは一度しか使ってはいけません。
         詳細の指示は改めて指示を出します。
         """.trimIndent(),
         toolRegistry = toolRegistry,
         strategy = createTripPlanningStrategy(askUser, feedbackTool, webSearchTools, directionsTool, calendarTool),
-        maxIterations = 100
+        maxIterations = 150
     ) {
         install(OpenTelemetry) {
             setVerbose(true)
