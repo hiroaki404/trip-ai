@@ -52,7 +52,7 @@ class WebSearchTools(
 
     @Tool
     @LLMDescription("Search for a query on Google.")
-    suspend fun search(
+    suspend fun webSearch(
         @LLMDescription("The query to search")
         query: String,
         @LLMDescription("Number of results to return (1-10, default: 10)")

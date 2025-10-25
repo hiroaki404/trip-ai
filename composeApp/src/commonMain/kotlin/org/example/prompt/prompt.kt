@@ -75,24 +75,24 @@ fun planTripPrompt(requestInfo: String) = """
 
 【ツールの活用方針】
 
-**GoogleSearchの使用制限（重要）：**
-- GoogleSearchの使用回数は0-2回程度に抑える（コストと時間の効率化のため）
+**web_searchの使用制限（重要）：**
+- webSearchの使用回数は0-2回程度に抑える（コストと時間の効率化のため）
 - 基本的に一般知識で対応し、検索は極力避ける
 - 一般的な観光地や交通機関の基本情報は検索不要
 - 以下の場合のみ検索を検討：
   1. ユーザーが明示的に指定した特定施設の最新情報が必要な場合
   2. 特別なイベントや季節限定情報が旅程に不可欠な場合
 
-**Scrapeの使用制限：**
-- Scrapeの使用は1-2回程度に抑える
-- GoogleSearchで重要な情報を見つけた場合のみ使用
+**scrapeの使用制限：**
+- scrapeの使用は1-2回程度に抑える
+- search toolで重要な情報を見つけた場合のみ使用
 
-**DirectionsTool/GeocodingToolの使用制限：**
-- **ForwardGeocodeTool（場所名→緯度経度）は主要なActivityのみ使用（2-3個程度）**
+**directions_tool/geocoding_toolの使用制限：**
+- **forward_geocode_Tool（場所名→緯度経度）は主要なActivityのみ使用（2-3個程度）**
   - 旅程の最初と最後のActivity、または最も重要なActivityのみ取得
   - その他のActivityは推定座標または近似値でOK
-- **すべてのTransportationに対してDirectionsToolで経路情報を取得（必須）**
-  - DirectionsToolで取得してlineIdフィールドに設定
+- **すべてのTransportationに対してdirections_toolで経路情報を取得（必須）**
+  - directions_Toolで取得してlineIdフィールドに設定
   - 出発地（from）と目的地（to）の座標を使って経路のidを取得
 - **合計tool呼び出し回数は4-8回程度を目安とする**
 
@@ -132,7 +132,7 @@ fun planTripPrompt(requestInfo: String) = """
 - ActivityとTransportationを時系列順に混在させる
 - 朝食(Activity) → 移動(Transportation) → 観光(Activity) → 移動(Transportation) → 昼食(Activity)... のように記録
 - 具体的な施設名や観光地名を挙げる
-- 移動が発生する場合は、必ずTransportationとして記録し、DirectionsToolで経路情報（lineId）を取得する
+- 移動が発生する場合は、必ずTransportationとして記録し、directions_toolで経路情報（lineId）を取得する
 - 金額の目安や注意事項も活動や移動の説明に含める
 - 検索で得た情報があれば優先的に記載し、なければ一般知識で補完する
 - **Activityの滞在時間は最低1時間以上とする。観光スポットでは基本的に2時間は滞在する**

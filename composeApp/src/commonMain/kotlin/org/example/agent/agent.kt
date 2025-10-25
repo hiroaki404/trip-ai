@@ -60,6 +60,19 @@ suspend fun createTripAgent(
         ユーザーに行きたい場所を尋ねず、あなたが提案してください。
         最小限の情報とは、旅行先、予算のことです。
         あまり細かく聞きすぎず、ある程度分かったところで計画を立ててください
+        
+        ユーザーの希望を聞き出したらその後、ツールを役立てて旅行計画を立ててください。
+        ツールはsearch、scrape、directions_toolがあります。
+        ツールは必要に応じて使ってください。ただし使いすぎるとコストが悪化するため、数回にとどめてください。
+        使用回数の目安は改めて指示を出します。
+        
+        そして旅行計画を作成後、ユーザーにフィードバッグを求めます。
+        __feedback_user__ツールを使ってユーザーに提示します。このとき承諾が得られれば、
+        もはや_feedback_user__ツールを使わないで、計画を確定させます。
+        ユーザーが拒否した場合また計画を直し、__feedback__user__で提示します。
+        旅行計画が確定されたらcalendar_toolを使ってカレンダーに登録します。
+        このツールは1回しか使ってはいけません。
+        詳細の指示は改めて指示を出します。
         """.trimIndent(),
         toolRegistry = toolRegistry,
         strategy = createTripPlanningStrategy(askUser, feedbackTool, webSearchTools, directionsTool, calendarTool),
