@@ -7,7 +7,10 @@ import ai.koog.agents.core.tools.reflect.asTools
 import ai.koog.agents.ext.agent.subgraphWithTask
 import ai.koog.prompt.executor.clients.google.GoogleModels
 import ai.koog.prompt.structure.StructureFixingParser
-import org.example.prompt.*
+import org.example.prompt.clarifyRequestPrompt
+import org.example.prompt.createCalendarPrompt
+import org.example.prompt.planTripPrompt
+import org.example.prompt.tripPlanExample
 import org.example.tools.*
 
 fun createTripPlanningStrategy(
@@ -44,7 +47,7 @@ fun createTripPlanningStrategy(
         plan.also { planMemory = it }
     }
 
-    val createCalendar by subgraphWithTask<TripPlan, TripPlan>(
+    val evaluation by subgraphWithTask<TripPlan, TripPlan>(
         tools = listOf(calendarTool, feedbackTool),
     ) { plan ->
         createCalendarPrompt(plan)
@@ -59,5 +62,5 @@ fun createTripPlanningStrategy(
         nodeStructuredOutput forwardTo savePlan
                 transformed { it.getOrThrow().structure }
     )
-    savePlan then createCalendar then restorePlan then nodeFinish
+    savePlan then evaluation then restorePlan then nodeFinish
 }
