@@ -19,28 +19,10 @@ fun createTripPlanningStrategy(
 ) = strategy<String, TripPlan>("trip-planning") {
     var planMemory: TripPlan? = null
 
-    val nodeBeforeClarifyUserRequest by node<String, String> { userInput ->
-        llm.writeSession {
-            updatePrompt {
-                system(systemClarifyRequestPrompt)
-            }
-        }
-        userInput
-    }
-
     val clarifyUserRequest by subgraphWithTask<String, String>(
         tools = listOf(askTool),
     ) { userInput ->
         clarifyRequestPrompt(userInput)
-    }
-
-    val nodeBeforePlanTrip by node<String, String> { requestInfo ->
-        llm.writeSession {
-            updatePrompt {
-                system(systemPlanTripPrompt)
-            }
-        }
-        requestInfo
     }
 
     val planTrip by subgraphWithTask<String, String>(
@@ -72,7 +54,7 @@ fun createTripPlanningStrategy(
         planMemory!! // FIXME: error handling when null
     }
 
-    nodeStart then nodeBeforeClarifyUserRequest then clarifyUserRequest then nodeBeforePlanTrip then planTrip then nodeStructuredOutput
+    nodeStart then clarifyUserRequest then planTrip then nodeStructuredOutput
     edge(
         nodeStructuredOutput forwardTo savePlan
                 transformed { it.getOrThrow().structure }
