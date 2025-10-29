@@ -102,10 +102,12 @@ suspend fun createTripAgent(
                     }
 
                     else -> {
+                        // for presentation
+                        val toolName = if (tool.name == "directions_tool") "map_tool" else tool.name
                         onMessageUpdate(
                             ChatMessage.ToolCall(
-                                tool.name,
-                                "${tool.name} is Called"
+                                toolName,
+                                "$toolName is Called"
                             )
                         )
                     }
