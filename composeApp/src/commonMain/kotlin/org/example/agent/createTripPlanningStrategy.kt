@@ -5,7 +5,7 @@ import ai.koog.agents.core.dsl.builder.strategy
 import ai.koog.agents.core.dsl.extension.nodeLLMRequestStructured
 import ai.koog.agents.core.tools.reflect.asTools
 import ai.koog.agents.ext.agent.subgraphWithTask
-import ai.koog.prompt.executor.clients.google.GoogleModels
+import ai.koog.prompt.executor.clients.openrouter.OpenRouterModels
 import ai.koog.prompt.structure.StructureFixingParser
 import org.example.prompt.clarifyRequestPrompt
 import org.example.prompt.createCalendarPrompt
@@ -38,7 +38,7 @@ fun createTripPlanningStrategy(
         "tripPlanStructured",
         examples = listOf(tripPlanExample),
         fixingParser = StructureFixingParser(
-            fixingModel = GoogleModels.Gemini2_0Flash,
+            fixingModel = OpenRouterModels.Gemini2_5Flash,
             retries = 3
         )
     )

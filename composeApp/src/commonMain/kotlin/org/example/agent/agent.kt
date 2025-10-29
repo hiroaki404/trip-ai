@@ -7,7 +7,7 @@ import ai.koog.agents.features.eventHandler.feature.handleEvents
 import ai.koog.agents.features.opentelemetry.feature.OpenTelemetry
 import ai.koog.agents.features.opentelemetry.integration.langfuse.addLangfuseExporter
 import ai.koog.agents.mcp.McpToolRegistryProvider
-import ai.koog.prompt.executor.clients.google.GoogleModels
+import ai.koog.prompt.executor.clients.openrouter.OpenRouterModels
 import ai.koog.prompt.executor.llms.all.simpleGoogleAIExecutor
 import ai.koog.prompt.executor.llms.all.simpleOllamaAIExecutor
 import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
@@ -51,8 +51,8 @@ suspend fun createTripAgent(
     }
 
     return AIAgent<String, TripPlan>(
-        promptExecutor = geminiExecutor,
-        llmModel = GoogleModels.Gemini2_0Flash,
+        promptExecutor = openRouterExecutor,
+        llmModel = OpenRouterModels.Gemini2_5Flash,
         systemPrompt = """
         あなたは旅行プランナーです。ユーザーの指示に従って、旅行計画を立ててください。
         ただしユーザーの指示が少ないときは__ask_user__ツールを使って、1度はユーザーに情報提供を促してください。
@@ -63,7 +63,7 @@ suspend fun createTripAgent(
         
         ユーザーの希望を聞き出したらその後、ツールを役立てて旅行計画を立ててください。
         ツールはsearch、scrape、directions_toolがあります。
-        ツールは必要に応じて使ってください。ただし使いすぎるとコストが悪化するため、数回にとどめてください。
+        ツールは必要に応じて使ってください。ただし使いすぎるとコストが悪化するため、全体の旅行プランに対してツールの使用回数は合計8回までにとどめてください。
         使用回数の目安は改めて指示を出します。
         
         そして旅行計画を作成後、ユーザーにフィードバッグを求めます。
