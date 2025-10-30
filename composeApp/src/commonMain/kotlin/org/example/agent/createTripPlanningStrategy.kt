@@ -3,7 +3,6 @@ package org.example.agent
 import ai.koog.agents.core.dsl.builder.forwardTo
 import ai.koog.agents.core.dsl.builder.strategy
 import ai.koog.agents.core.dsl.extension.nodeLLMRequestStructured
-import ai.koog.agents.core.tools.reflect.asTools
 import ai.koog.agents.ext.agent.subgraphWithTask
 import ai.koog.prompt.executor.clients.openrouter.OpenRouterModels
 import ai.koog.prompt.structure.StructureFixingParser
@@ -16,7 +15,8 @@ import org.example.tools.*
 fun createTripPlanningStrategy(
     askTool: AskUserInUI,
     feedbackTool: FeedbackUserInUI,
-    webSearchTools: WebSearchTools,
+    webSearchTool: WebSearchTool,
+    webScrapeTool: WebScrapeTool,
     directionsTool: DirectionsTool,
     calendarTool: CalendarTool,
 ) = strategy<String, TripPlan>("trip-planning") {
@@ -29,7 +29,7 @@ fun createTripPlanningStrategy(
     }
 
     val planTrip by subgraphWithTask<String, String>(
-        tools = webSearchTools.asTools() + directionsTool,
+        tools = listOf(webSearchTool, webScrapeTool, directionsTool),
     ) { requestInfo ->
         planTripPrompt(requestInfo)
     }

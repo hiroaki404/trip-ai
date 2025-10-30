@@ -1,13 +1,13 @@
 package org.example.tools
 
+import ai.koog.agents.core.tools.SimpleTool
 import ai.koog.agents.core.tools.annotations.LLMDescription
-import ai.koog.agents.core.tools.annotations.Tool
-import ai.koog.agents.core.tools.reflect.ToolSet
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -38,11 +38,10 @@ data class WebPageScrapingResult(
     val body: String,
 )
 
-@LLMDescription("Tools for searching the web.")
-class WebSearchTools(
+class WebSearchTool(
     private val googleApiKey: String,
     private val searchEngineId: String,
-) : ToolSet {
+) : SimpleTool<WebSearchTool.Args>() {
     private val httpClient =
         HttpClient {
             install(ContentNegotiation) {
@@ -50,33 +49,53 @@ class WebSearchTools(
             }
         }
 
-    @Tool
-    @LLMDescription("Search for a query on Google.")
-    suspend fun webSearch(
-        @LLMDescription("The query to search")
-        query: String,
-        @LLMDescription("Number of results to return (1-10, default: 10)")
-        num: Int = 10,
-    ): WebSearchResult {
+    @Serializable
+    data class Args(
+        @property:LLMDescription("The query to search")
+        val query: String,
+        @property:LLMDescription("Number of results to return (1-10, default: 10)")
+        val num: Int = 10,
+    )
+
+    override val name: String = "webSearch"
+    override val description: String = "Search for a query on Google."
+    override val argsSerializer: KSerializer<Args> = Args.serializer()
+
+    override suspend fun doExecute(args: Args): String {
         val response =
             httpClient.get("https://www.googleapis.com/customsearch/v1") {
                 parameter("key", googleApiKey)
                 parameter("cx", searchEngineId)
-                parameter("q", query)
-                parameter("num", num.coerceIn(1, 10))
+                parameter("q", args.query)
+                parameter("num", args.num.coerceIn(1, 10))
             }
 
-        return response.body<WebSearchResult>()
+        val result = response.body<WebSearchResult>()
+        return Json.encodeToString(WebSearchResult.serializer(), result)
     }
+}
 
-    @Tool
-    @LLMDescription("Scrape a web page for content")
-    suspend fun scrape(
-        @LLMDescription("The URL to scrape")
-        url: String,
-    ): WebPageScrapingResult {
+object WebScrapeTool : SimpleTool<WebScrapeTool.Args>() {
+    private val httpClient =
+        HttpClient {
+            install(ContentNegotiation) {
+                json(json)
+            }
+        }
+
+    @Serializable
+    data class Args(
+        @property:LLMDescription("The URL to scrape")
+        val url: String,
+    )
+
+    override val name: String = "Scrape"
+    override val description: String = "Scrape a web page for content"
+    override val argsSerializer: KSerializer<Args> = Args.serializer()
+
+    override suspend fun doExecute(args: Args): String {
         val response =
-            httpClient.get(url) {
+            httpClient.get(args.url) {
                 header("User-Agent", "Mozilla/5.0 (compatible; WebSearchBot/1.0)")
             }
 
@@ -91,6 +110,7 @@ class WebSearchTools(
                 .replace(Regex("\\s+"), " ")
                 .trim()
 
-        return WebPageScrapingResult(body = textContent)
+        val result = WebPageScrapingResult(body = textContent)
+        return Json.encodeToString(WebPageScrapingResult.serializer(), result)
     }
 }

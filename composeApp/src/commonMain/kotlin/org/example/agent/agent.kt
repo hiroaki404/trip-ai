@@ -2,7 +2,6 @@ package org.example.agent
 
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.tools.ToolRegistry
-import ai.koog.agents.core.tools.reflect.asTools
 import ai.koog.agents.features.eventHandler.feature.handleEvents
 import ai.koog.agents.features.opentelemetry.feature.OpenTelemetry
 import ai.koog.agents.features.opentelemetry.integration.langfuse.addLangfuseExporter
@@ -36,7 +35,8 @@ suspend fun createTripAgent(
     val openRouterExecutor = simpleOpenRouterExecutor(openRouterApiKey)
     val ollamaExecutor = simpleOllamaAIExecutor()
 
-    val webSearchTools = WebSearchTools(googleApiKey, searchEngineId)
+    val webSearchTool = WebSearchTool(googleApiKey, searchEngineId)
+    val webScrapeTool = WebScrapeTool
     // not work in Android
     val mapTools = McpToolRegistryProvider.fromTransport(createMapMCP(mapboxAccessToken, npxCommandPath))
     val directionsTool = DirectionsTool(mapboxAccessToken)
@@ -45,7 +45,8 @@ suspend fun createTripAgent(
     val toolRegistry = ToolRegistry {
         tool(askUser)
         tool(feedbackTool)
-        tools(webSearchTools.asTools())
+        tool(webSearchTool)
+        tool(webScrapeTool)
         tool(directionsTool)
         tool(calendarTool)
     }
@@ -76,7 +77,14 @@ suspend fun createTripAgent(
         詳細の指示は改めて指示を出します。
         """.trimIndent(),
         toolRegistry = toolRegistry,
-        strategy = createTripPlanningStrategy(askUser, feedbackTool, webSearchTools, directionsTool, calendarTool),
+        strategy = createTripPlanningStrategy(
+            askUser,
+            feedbackTool,
+            webSearchTool,
+            webScrapeTool,
+            directionsTool,
+            calendarTool
+        ),
         maxIterations = 150
     ) {
         install(OpenTelemetry) {
@@ -105,10 +113,12 @@ suspend fun createTripAgent(
                     else -> {
                         // for presentation
                         val toolName = if (tool.name == "directions_tool") "mapTool" else tool.name
+                        val content =
+                            if (toolName == "webSearch") (it.toolArgs as WebSearchTool.Args).query else null
                         onMessageUpdate(
                             ChatMessage.ToolCall(
                                 toolName,
-                                "$toolName is Called"
+                                content
                             )
                         )
                     }

@@ -17,7 +17,7 @@ sealed interface ChatMessage {
     data class Assistant(val content: String) : ChatMessage
     data class AskToolCall(val content: String) : ChatMessage
     data class FeedbackToolCall(val summary: String) : ChatMessage
-    data class ToolCall(val toolName: String, val content: String) : ChatMessage
+    data class ToolCall(val toolName: String, val content: String?) : ChatMessage
     data class Structured(val content: TripPlan) : ChatMessage
 }
 

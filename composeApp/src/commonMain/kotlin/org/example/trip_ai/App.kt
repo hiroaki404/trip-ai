@@ -320,7 +320,7 @@ fun ChatMessageItem(message: ChatMessage) {
                     )
                 },
                 label = "ツール: ${message.toolName}",
-                content = null,
+                content = message.content,
                 containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                 contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                 alignEnd = false,
