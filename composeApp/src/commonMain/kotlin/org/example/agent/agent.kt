@@ -65,6 +65,7 @@ suspend fun createTripAgent(
         ツールはsearch、scrape、directions_toolがあります。
         ツールは必要に応じて使ってください。ただし使いすぎるとコストが悪化するため、全体の旅行プランに対してツールの使用回数は合計8回までにとどめてください。
         使用回数の目安は改めて指示を出します。
+        **ツールの使用上限は絶対に守ってください**
         
         そして旅行計画を作成後、ユーザーにフィードバッグを求めます。
         __feedback_user__ツールを使ってユーザーに提示します。このとき承諾が得られれば、
@@ -103,7 +104,7 @@ suspend fun createTripAgent(
 
                     else -> {
                         // for presentation
-                        val toolName = if (tool.name == "directions_tool") "map_tool" else tool.name
+                        val toolName = if (tool.name == "directions_tool") "mapTool" else tool.name
                         onMessageUpdate(
                             ChatMessage.ToolCall(
                                 toolName,
